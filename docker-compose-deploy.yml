@@ -1,0 +1,32 @@
+version: '3.9'
+
+services:
+  app:
+    build:
+      context: .
+    restart: always
+    volumes:
+      - static-data:/vol/web
+      - ./logs:/app/logs
+    env_file:
+      - ./.env
+
+  proxy:
+    build:
+      context: ./proxy
+    restart: always
+    depends_on:
+      - app
+    ports:
+      - 9001:8000
+    volumes:
+      - static-data:/vol/static
+
+volumes:
+  static-data:
+
+
+networks:
+  default:
+    name: cluster_default
+    external: true
