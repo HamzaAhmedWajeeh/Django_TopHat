@@ -14,8 +14,17 @@ urlpatterns = [
     path('categories/<int:pk>/', views.CategoriesDetailAPIView.as_view(), name='categories-detail'),
     path('categories/delete/<int:pk>/', views.CategoriesDeleteAPIView.as_view(), name='categories-delete'),
     path('categories/update/<int:pk>/', views.CategoriesUpdateAPIView.as_view(), name='categories-update'),
+
     path('feedback/', views.FeedbackCreateAPIView.as_view(), name='feedback-new'),
+    path('feedback/all/admin', views.FeedbackListAPIView.as_view(), name='feedback-all'),
     path('feedback/<int:pk>/', views.FeedbackDetailAPIView.as_view(), name='feedback-detail'),
     path('feedback/delete/<int:pk>/', views.FeedbackDeleteAPIView.as_view(), name='feedback-delete'),
+
+    path('menuitems/', views.MenuItemsListAPIView.as_view(), name='menuitems-list-create'),
+    path('menuitems/<int:pk>/', views.MenuItemsRetrieveAPIView.as_view(), name='menuitems-retrieve'),
+    path('menuitems/category/<int:category_id>/', views.MenuItemsListByCategoryAPIView.as_view(), name='menuitems-category-all'),
+    path('menuitems/update/<int:pk>/', views.MenuItemsUpdateAPIView.as_view(), name='menuitems-update'),
+    path('menuitems/delete/<int:pk>/', views.MenuItemsDeleteAPIView.as_view(), name='menuitems-delete'),
+    path('menuitems/new/', views.MenuItemsCreateAPIView.as_view(), name='menuitems-delete'),
     path('', include(router.urls)),
 ]

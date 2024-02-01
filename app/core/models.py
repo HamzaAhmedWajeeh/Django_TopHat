@@ -100,12 +100,12 @@ class MenuItems(models.Model):
     category = models.ForeignKey(
         'Categories', null=True, blank=True, on_delete=models.CASCADE
         )
-    image = models.ImageField()
-    image1 = models.ImageField()
-    image2 = models.ImageField()
-    image3 = models.ImageField()
-    image4 = models.ImageField()
-    image5 = models.ImageField()
+    image = models.ImageField(null=True)
+    image1 = models.ImageField(null=True)
+    image2 = models.ImageField(null=True)
+    image3 = models.ImageField(null=True)
+    image4 = models.ImageField(null=True)
+    image5 = models.ImageField(null=True)
 
     def __str__(self):
         return self.name

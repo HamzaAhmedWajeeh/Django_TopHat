@@ -6,14 +6,16 @@ from rest_framework import (
 )
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from core.permissions import IsAdminUser, IsOwnerOrAdmin
+from core.permissions import IsAdminUser, IsOwnerOrAdmin, IsAdminUserOrReadOnly
 from core.models import(
     Categories,
-    Feedback
+    Feedback,
+    MenuItems
 )
 from .serializers import(
     CategoriesSerializer,
-    FeedbackSerializer
+    FeedbackSerializer,
+    MenuItemsSerializer
 )
 
 
@@ -60,7 +62,14 @@ class FeedbackDetailAPIView(generics.RetrieveAPIView):
     serializer_class = FeedbackSerializer
     queryset = Feedback.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
+
+
+class FeedbackListAPIView(generics.ListAPIView):
+    serializer_class = FeedbackSerializer
+    queryset = Feedback.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 
 class FeedbackCreateAPIView(generics.GenericAPIView):
@@ -96,7 +105,7 @@ class FeedbackCreateAPIView(generics.GenericAPIView):
 class FeedbackDeleteAPIView(generics.DestroyAPIView):
     serializer_class = FeedbackSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsOwnerOrAdmin]
+    permission_classes = [IsAuthenticated, IsOwnerOrAdmin]
     queryset = Feedback.objects.all()
 
     def get_queryset(self):
@@ -110,3 +119,56 @@ class FeedbackDeleteAPIView(generics.DestroyAPIView):
             return Response({"detail": "Feedback deleted successfully."}, status=status.HTTP_204_NO_CONTENT)
 
         return response
+
+
+# Menu Items START
+class MenuItemsListAPIView(generics.ListAPIView):
+    serializer_class = MenuItemsSerializer
+    queryset = MenuItems.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class MenuItemsRetrieveAPIView(generics.RetrieveAPIView):
+    serializer_class = MenuItemsSerializer
+    queryset = MenuItems.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class MenuItemsUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = MenuItemsSerializer
+    queryset = MenuItems.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class MenuItemsDeleteAPIView(generics.DestroyAPIView):
+    serializer_class = MenuItemsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
+    queryset = MenuItems.objects.all()
+
+    def delete(self, request, *args, **kwargs):
+        return super().delete(request, *args, **kwargs)
+
+
+class MenuItemsCreateAPIView(generics.CreateAPIView):
+    serializer_class = MenuItemsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+
+class MenuItemsListByCategoryAPIView(generics.ListAPIView):
+    serializer_class = MenuItemsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        category = self.kwargs.get('category_id')
+        print(f"Category ID: {category}")
+
+        queryset = MenuItems.objects.filter(category_id=category).all()
+        print(f"Queryset: {queryset}")
+
+        return queryset
