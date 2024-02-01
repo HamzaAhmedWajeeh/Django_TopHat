@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     # custom
     'core',
     'user',
+    'tophat',
     # third party
     'rest_framework',
     'rest_framework.authtoken',

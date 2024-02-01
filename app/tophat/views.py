@@ -1,3 +1,37 @@
-from django.shortcuts import render
+from rest_framework import (
+    generics,
+    authentication,
+    viewsets
+)
+from rest_framework.permissions import IsAuthenticated
+from core.permissions import IsAdminUser
+from core.models import(
+    Categories,
+)
+from .serializers import(
+    CategoriesSerializer,
+)
 
-# Create your views here.
+
+class CategoriesListAPIView(generics.ListAPIView):
+    serializer_class = CategoriesSerializer
+    queryset = Categories.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class CategoriesDetailAPIView(generics.RetrieveAPIView):
+    serializer_class = CategoriesSerializer
+    queryset = Categories.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+class CategoriesUpdateAPIView(generics.UpdateAPIView):
+    serializer_class = CategoriesSerializer
+    queryset = Categories.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+class CategoriesCreateAPIView(generics.CreateAPIView):
+    serializer_class = CategoriesSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
