@@ -30,6 +30,6 @@ urlpatterns = [
         name='api-docs',
     ),
 
-    path('api/django/user/', include('user.urls')),
-    path('api/django/', include('tophat.urls')),
+    path('api/user/', include('user.urls')),
+    path('api/  ', include('tophat.urls')),
 ]
