@@ -31,5 +31,5 @@ urlpatterns = [
     ),
 
     path('api/user/', include('user.urls')),
-    path('api/  ', include('tophat.urls')),
+    path('api/', include('tophat.urls')),
 ]
