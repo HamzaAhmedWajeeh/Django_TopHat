@@ -64,30 +64,107 @@ class User(AbstractBaseUser, PermissionsMixin):
             return None
 
 
-# class Payment(models.Model):
-#     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
-#     succeeded = models.BooleanField(default=False)
-#     payment_intent_id = models.CharField(max_length=500)
-#     is_active = models.BooleanField(default=False)
-#     is_subscription = models.BooleanField(default=False)
+class Categories(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    # Who Columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True)
 
-#     # who columns
-#     creation_date = models.DateTimeField(auto_now=True)
-#     created_by = models.IntegerField(null=True, blank=True)
-#     last_update_date = models.DateTimeField(auto_now_add=True)
-#     last_updated_by = models.IntegerField(null=True, blank=True)
-#     last_update_login = models.IntegerField(null=True)
-
-#     def __repr__(self) -> str:
-#         active = "Active" if self.is_active else "InActive"
-#         return f"{active} Payment by {self.organization.name}"
-
-#     def __str__(self):
-#         active = "Active" if self.is_active else "InActive"
-#         return f"{active} Payment by {self.organization.name}"
+    def __str__(self):
+        return self.name
 
 
-#     @receiver(post_save, sender=Organization)
-#     def create_payment(sender, instance, created, **kwargs):
-#         if created:
-#             Payment.objects.create(organization=instance)
+class Feedback(models.Model):
+    user = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.CASCADE
+        )
+    message = models.CharField(max_length=450, null=True)
+    # Who Columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True)
+
+    def __str__(self):
+        return self.user
+
+
+class MenuItems(models.Model):
+    name = models.CharField(max_length=255, null=True)
+    description = models.CharField(max_length=500, null=True)
+    price = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+    category = models.ForeignKey(
+        'Categories', null=True, blank=True, on_delete=models.CASCADE
+        )
+    image = models.ImageField()
+    image1 = models.ImageField()
+    image2 = models.ImageField()
+    image3 = models.ImageField()
+    image4 = models.ImageField()
+    image5 = models.ImageField()
+
+    def __str__(self):
+        return self.name
+
+
+class Payments(models.Model):
+    order = models.ForeignKey(
+        'Orders', null=True, blank=True, on_delete=models.CASCADE
+        )
+    user = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.CASCADE
+        )
+    succeeded = models.BooleanField(default=False)
+    payment_intent_id = models.CharField(max_length=500)
+
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True)
+
+
+class Orders(models.Model):
+    user = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.CASCADE
+        )
+    payment = models.ForeignKey(
+        'Payments', null=True, blank=True, on_delete=models.CASCADE
+        )
+    date = models.DateTimeField(auto_now=True)
+    amount = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+    order_status = models.CharField(max_length=30, null=True)
+    payment_status = models.CharField(max_length=30, null=True)
+
+
+class OrderItems(models.Model):
+    order = models.ForeignKey(
+        'Orders', null=True, blank=True, on_delete=models.CASCADE
+        )
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+    quanity = models.IntegerField(null=True, blank=True)
+    total = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+
+
+class LoyaltyPoints(models.Model):
+    user = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.CASCADE
+        )
+    points = models.DecimalField(max_digits=37, decimal_places=2, null=True)
+
+
+class Cart(models.Model):
+    user = models.ForeignKey(
+        'User', null=True, blank=True, on_delete=models.CASCADE
+        )
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+    quanity = models.IntegerField(null=True, blank=True)

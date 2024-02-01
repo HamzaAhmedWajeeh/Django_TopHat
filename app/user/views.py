@@ -12,8 +12,12 @@ from django.utils.translation import gettext_lazy as _
 # from django.conf import settings
 # from django.core.mail import send_mail
 # from django.template.loader import render_to_string
+# from core.models import User
+# from user.utils import encrypt_email
 
 from user.serializers import (
+    # ForgetPasswordConfirmSerializer,
+    # ForgetPasswordSerializer,
     UserSerializer,
     AuthTokenSerializer,
     UserUpdateSerializer,
