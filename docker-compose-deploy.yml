@@ -10,17 +10,8 @@ services:
       - ./logs:/app/logs
     env_file:
       - ./.env
-
-  proxy:
-    build:
-      context: ./proxy
-    restart: always
     depends_on:
-      - app
-    ports:
-      - 9001:8000
-    volumes:
-      - static-data:/vol/static
+      - db
 
   db:
     image: mcr.microsoft.com/mssql/server:2022-latest
@@ -41,7 +32,6 @@ services:
 
 volumes:
   static-data:
-
 
 networks:
   default:
