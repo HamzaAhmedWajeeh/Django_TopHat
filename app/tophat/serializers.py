@@ -6,9 +6,14 @@ from core.models import(
     # Payments,
     # Orders,
     # OrderItems,
-    # LoyaltyPoints,
+    LoyaltyPoints,
     # Cart
 )
+from rest_framework.response import Response
+from rest_framework import (
+    status,
+)
+from decimal import Decimal
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
@@ -53,3 +58,51 @@ class MenuItemsSerializer(serializers.ModelSerializer):
         read_only_fields = [
             'id'
         ]
+
+
+class LoyaltyPointsSerializer(serializers.Serializer):
+    """Serializer for LoyaltyPoints Object"""
+
+    user = 'user.serializers.UserSerializer'
+
+    points = serializers.DecimalField(required=True, max_digits=20, decimal_places=3)
+
+    def create(self, validated_data):
+        """Add points based on order value"""
+
+        user_id = self.context['request'].user
+        order_value = validated_data.pop('points', None)
+
+        points_earned = Decimal(order_value) * Decimal('0.1')
+
+        loyalty_points_instance, created = LoyaltyPoints.objects.get_or_create(user=user_id)
+
+        if created:
+            loyalty_points_instance.points = points_earned
+        else:
+            loyalty_points_instance.points += points_earned
+
+        loyalty_points_instance.save()
+
+        return loyalty_points_instance
+
+    # def update(self, instance, validated_data):
+    #     """Update and return loyalty points"""
+    #     user_id = self.context.user
+    #     instance.points_to_redeem = validated_data.pop('points_to_redeem', None)
+
+    #     try:
+    #         loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
+    #     except LoyaltyPoints.DoesNotExist:
+    #         return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     if loyalty_points_instance.points < instance.points_to_redeem:
+    #         return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
+
+    #     loyalty_points_instance.points -= instance.points_to_redeem
+    #     loyalty_points_instance.save()
+
+    #     # Perform additional logic for redeeming points (e.g., apply discount, update order total, etc.)
+
+    #     serializer = self.get_serializer(loyalty_points_instance)
+    #     return Response(serializer.data)

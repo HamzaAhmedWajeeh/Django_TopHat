@@ -4,7 +4,7 @@ from tophat import views
 
 router = DefaultRouter()
 
-# router.register('categories', viewset=views.CategoriesAPIView)
+# router.register('points', viewset=views.LoyaltyPointsViewSet)
 
 app_name = 'tophat'
 
@@ -15,7 +15,7 @@ urlpatterns = [
     path('categories/delete/<int:pk>/', views.CategoriesDeleteAPIView.as_view(), name='categories-delete'),
     path('categories/update/<int:pk>/', views.CategoriesUpdateAPIView.as_view(), name='categories-update'),
 
-    path('feedback/', views.FeedbackCreateAPIView.as_view(), name='feedback-new'),
+    path('feedback/new', views.FeedbackCreateAPIView.as_view(), name='feedback-new'),
     path('feedback/all/admin', views.FeedbackListAPIView.as_view(), name='feedback-all'),
     path('feedback/<int:pk>/', views.FeedbackDetailAPIView.as_view(), name='feedback-detail'),
     path('feedback/delete/<int:pk>/', views.FeedbackDeleteAPIView.as_view(), name='feedback-delete'),
@@ -26,5 +26,11 @@ urlpatterns = [
     path('menuitems/update/<int:pk>/', views.MenuItemsUpdateAPIView.as_view(), name='menuitems-update'),
     path('menuitems/delete/<int:pk>/', views.MenuItemsDeleteAPIView.as_view(), name='menuitems-delete'),
     path('menuitems/new/', views.MenuItemsCreateAPIView.as_view(), name='menuitems-delete'),
+
+    path('points/', views.LoyaltyPointsCreation.as_view(), name='loyalty-points-create'),
+    path('points/redeem', views.LoyaltyPointsRedemption.as_view(), name='loyalty-points-redeem'),
+    path('points/get/', views.LoyaltyPointsGet.as_view(), name='loyalty-points-get'),
+
+
     path('', include(router.urls)),
 ]

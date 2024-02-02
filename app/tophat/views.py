@@ -10,13 +10,16 @@ from core.permissions import IsAdminUser, IsOwnerOrAdmin, IsAdminUserOrReadOnly
 from core.models import(
     Categories,
     Feedback,
-    MenuItems
+    MenuItems,
+    LoyaltyPoints
 )
 from .serializers import(
     CategoriesSerializer,
     FeedbackSerializer,
-    MenuItemsSerializer
+    MenuItemsSerializer,
+    LoyaltyPointsSerializer,
 )
+from decimal import Decimal
 
 
 # Categories START
@@ -166,9 +169,54 @@ class MenuItemsListByCategoryAPIView(generics.ListAPIView):
 
     def get_queryset(self):
         category = self.kwargs.get('category_id')
-        print(f"Category ID: {category}")
-
         queryset = MenuItems.objects.filter(category_id=category).all()
-        print(f"Queryset: {queryset}")
-
         return queryset
+
+
+# Loyalty Points START
+class LoyaltyPointsCreation(generics.CreateAPIView):
+    queryset = LoyaltyPoints.objects.all()
+    serializer_class = LoyaltyPointsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class LoyaltyPointsRedemption(generics.UpdateAPIView):
+    queryset = LoyaltyPoints.objects.all()
+    serializer_class = LoyaltyPointsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        user_id = self.request.user.id
+        points_to_redeem = Decimal(request.data.get('points', 0))
+
+        try:
+            loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
+        except LoyaltyPoints.DoesNotExist:
+            return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        if loyalty_points_instance.points < points_to_redeem:
+            return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Perform additional logic for redeeming points (e.g., apply discount, update order total, etc.)
+        # Assuming you have an Order model, you can update it accordingly in this section.
+
+        loyalty_points_instance.points -= points_to_redeem
+        loyalty_points_instance.save()
+
+        serializer = self.get_serializer(loyalty_points_instance)
+        return Response(serializer.data)
+
+
+class LoyaltyPointsGet(generics.RetrieveAPIView):
+    queryset = LoyaltyPoints.objects.all()
+    serializer_class = LoyaltyPointsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_object(self):
+        """Retrieve loyalty points for the current authenticated user"""
+        user = self.request.user
+        loyalty_points_instance = LoyaltyPoints.objects.get(user=user)
+        return loyalty_points_instance
