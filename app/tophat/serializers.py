@@ -4,8 +4,8 @@ from core.models import(
     Feedback,
     MenuItems,
     # Payments,
-    # Orders,
-    # OrderItems,
+    Orders,
+    OrderItems,
     LoyaltyPoints,
     # Cart
 )
@@ -86,23 +86,17 @@ class LoyaltyPointsSerializer(serializers.Serializer):
 
         return loyalty_points_instance
 
-    # def update(self, instance, validated_data):
-    #     """Update and return loyalty points"""
-    #     user_id = self.context.user
-    #     instance.points_to_redeem = validated_data.pop('points_to_redeem', None)
 
-    #     try:
-    #         loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
-    #     except LoyaltyPoints.DoesNotExist:
-    #         return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
+class OrderItemSerializer(serializers.ModelSerializer):
+    item = serializers.PrimaryKeyRelatedField(queryset=MenuItems.objects.all())
 
-    #     if loyalty_points_instance.points < instance.points_to_redeem:
-    #         return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
+    class Meta:
+        model = OrderItems
+        fields = ['item', 'quanity']
 
-    #     loyalty_points_instance.points -= instance.points_to_redeem
-    #     loyalty_points_instance.save()
+class OrderSerializer(serializers.ModelSerializer):
+    items = OrderItemSerializer(many=True)
 
-    #     # Perform additional logic for redeeming points (e.g., apply discount, update order total, etc.)
-
-    #     serializer = self.get_serializer(loyalty_points_instance)
-    #     return Response(serializer.data)
+    class Meta:
+        model = Orders
+        fields = ['amount', 'order_status', 'payment_status', 'items']

@@ -13,6 +13,11 @@ urlpatterns = [
         views.CreateUserView.as_view(),
         name='create'
         ),
+    path(
+        'create-admin/',
+        views.CreateAdminUserView.as_view(),
+        name='create-admin'
+    ),
     # path(
     #     'verify/<str:token>/',
     #     views.UserVerificationView.as_view(),

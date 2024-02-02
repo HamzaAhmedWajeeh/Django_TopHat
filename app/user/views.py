@@ -41,6 +41,18 @@ class CreateUserView(generics.CreateAPIView):
     serializer_class = UserSerializer
 
 
+class CreateAdminUserView(generics.CreateAPIView):
+    """
+    Create a new admin user in the system
+
+    Args:
+        generics (_type_): _description_
+    """
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
+
+    def perform_create(self, serializer):
+        user = serializer.save(is_staff=True)
 # class UserVerificationView(APIView):
 #     def get(self, request, token):
 #         user = User.get_user_by_verification_token(token)

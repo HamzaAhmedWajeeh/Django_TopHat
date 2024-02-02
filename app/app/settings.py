@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'core',
     'user',
     'tophat',
+    'payments',
     # third party
     'rest_framework',
     'rest_framework.authtoken',
@@ -194,8 +195,7 @@ CORS_ALLOW_HEADERS = (
 
 
 # For Stripe
-# STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
-# STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
-# STRIPE_WEBHOOK_SECRET = os.environ.get('STRIPE_WEBHOOK_SECRET')
+STRIPE_PUBLIC_KEY = os.environ.get('STRIPE_PUBLIC_KEY')
+STRIPE_SECRET_KEY = os.environ.get('STRIPE_SECRET_KEY')
 
-# REDIRECT_DOMAIN = os.environ.get('REDIRECT_DOMAIN')
+REDIRECT_DOMAIN = os.environ.get('REDIRECT_DOMAIN')
