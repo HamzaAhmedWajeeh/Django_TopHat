@@ -37,5 +37,11 @@ urlpatterns = [
     path('extras/new/', views.ExtrasPostByItem.as_view(), name='extras-new-item-id'),
     path('extras/update/<int:pk>/', views.ExtrasUpdate.as_view(), name='extras-update'),
 
+    path('cart/add/', views.AddToCartView.as_view(), name='cart-add'),
+    path('cart/delete/', views.CartDeleteAll.as_view(), name='cart-delete'),
+    path('cart/remove/<int:id>', views.CartDeleteItem.as_view(), name='cart-delete-id'),
+    path('cart/update/', views.CartUpdateQuantity.as_view(), name='cart-update'),
+    path('cart/get/', views.CartGetView.as_view(), name='cart-get'),
+
     path('', include(router.urls)),
 ]

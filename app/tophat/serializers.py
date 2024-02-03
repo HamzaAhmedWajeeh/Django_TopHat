@@ -7,7 +7,7 @@ from core.models import(
     Orders,
     OrderItems,
     LoyaltyPoints,
-    # Cart,
+    Cart,
     ItemExtras,
     Extras,
 )
@@ -129,3 +129,34 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
             'id', 'creation_date', 'created_by', 'last_updated_by',
             'last_update_login', 'last_update_date'
             ]
+
+
+class CartSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Cart
+        fields = ['id', 'user', 'item', 'quanity', 'total']
+
+        read_only_fields = ['id', 'user']
+
+        def validate_quantity(self, value):
+            if value <= 0:
+                raise serializers.ValidationError("Quantity must be a positive integer.")
+            return value
+
+        def get_item_name(self, obj):
+            cart_items = self.context.get('cart_items', [])
+            item = next((item for item in cart_items if item.id == obj.id), None)
+            return item.item.name if item else ''
+
+
+class CartItemCreateSerializer(serializers.Serializer):
+    item_id = serializers.IntegerField()
+    quantity = serializers.IntegerField()
+
+    def validate(self, data):
+        item_id = data.get('item_id')
+        quantity = data.get('quantity')
+
+        # You can add custom validation logic here
+
+        return data

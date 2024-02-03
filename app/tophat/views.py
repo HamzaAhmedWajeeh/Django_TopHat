@@ -8,8 +8,10 @@ from rest_framework import (
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from core.permissions import IsAdminUser, IsOwnerOrAdmin, IsAdminUserOrReadOnly
+from .methods import calculate_total
+from core.permissions import IsAdminUser, IsOwnerOrAdmin
 from core.models import(
+    Cart,
     Categories,
     Extras,
     Feedback,
@@ -18,6 +20,8 @@ from core.models import(
     LoyaltyPoints
 )
 from .serializers import(
+    CartItemCreateSerializer,
+    CartSerializer,
     CategoriesSerializer,
     ExtrasSerializer,
     FeedbackSerializer,
@@ -272,3 +276,143 @@ class ExtrasUpdate(generics.RetrieveUpdateDestroyAPIView):
     serializer_class = ExtrasSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
+
+
+# CART START
+class CartDeleteAll(generics.DestroyAPIView):
+    serializer_class = CartSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        user = self.request.user
+
+        Cart.objects.filter(user=user).delete()
+
+        return Response(
+            {"message": "All items deleted from the cart."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class CartDeleteItem(generics.DestroyAPIView):
+    serializer_class = CartSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def delete(self, request, *args, **kwargs):
+        cart_id = self.kwargs['id']
+
+        try:
+            cart_item = Cart.objects.get(id=cart_id)
+        except Cart.DoesNotExist:
+            return Response(
+                {"message": f"Cart item with id={cart_id} not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        cart_item.delete()
+
+        return Response(
+            {"message": f"Cart item with id={cart_id} deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class CartGetView(generics.ListAPIView):
+    serializer_class = CartSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user_id = self.request.user
+        cart_items = Cart.objects.filter(user=user_id)
+
+        self.get_serializer().context['cart_items'] = cart_items  # Store cart_items in context
+
+        return cart_items
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        cart_items_data = []
+
+        for item in serializer.data:
+            cart_item_data = {
+                'item': MenuItems.objects.get(pk=item['item']).name if 'item' in item else '',
+                'quanity': item['quanity'],
+                'total': item['total']
+            }
+            cart_items_data.append(cart_item_data)
+
+        return Response(cart_items_data)
+
+
+class CartUpdateQuantity(generics.UpdateAPIView):
+    serializer_class = CartSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def update(self, request, *args, **kwargs):
+        cart_id = self.kwargs['cart_id']
+        new_quantity = request.data.get('quantity')
+
+        try:
+            cart_item = Cart.objects.get(id=cart_id)
+        except Cart.DoesNotExist:
+            return Response(
+                {"message": f"Cart item with id={cart_id} not found."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        if new_quantity is not None and isinstance(new_quantity, int) and new_quantity > 0:
+            cart_item.quantity = new_quantity
+            cart_item.save()
+            return Response(
+                {"message": f"Quantity updated for cart item with id={cart_id}."},
+                status=status.HTTP_200_OK
+            )
+        else:
+            return Response(
+                {"message": "Invalid quantity. Please provide a positive integer."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+
+class AddToCartView(generics.CreateAPIView):
+    serializer_class = CartItemCreateSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def create(self, request, *args, **kwargs):
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = self.request.user
+        item_id = serializer.validated_data['item_id']
+        quantity = serializer.validated_data['quantity']
+
+        item = get_object_or_404(MenuItems, pk=item_id)
+
+        total = calculate_total(item.price, quantity)
+
+        cart_item = Cart.objects.filter(user=user, item=item).first()
+
+        if cart_item:
+            # Update existing cart item
+            cart_item.quanity += quantity
+            cart_item.total = calculate_total(item.price, cart_item.quanity)
+            cart_item.save()
+        else:
+            # Create a new cart item
+            Cart.objects.create(user=user, item=item, quanity=quantity, total=total)
+
+        cart_items = Cart.objects.filter(user=user)
+        cart_data = [{'item': item.item.name, 'quantity': item.quanity, 'total': str(item.total)} for item in cart_items]
+        total_price = sum(item.total for item in cart_items)
+
+        return Response({
+            "message": "Item added to the cart successfully.",
+            "cart": cart_data,
+            "total_price": str(total_price),
+        }, status=status.HTTP_201_CREATED)

@@ -195,4 +195,5 @@ class Cart(models.Model):
     item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
-    quantity = models.IntegerField(null=True, blank=True)
+    quanity = models.IntegerField(null=True, blank=True)
+    total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
