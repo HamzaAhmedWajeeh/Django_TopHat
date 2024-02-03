@@ -111,6 +111,34 @@ class MenuItems(models.Model):
         return self.name
 
 
+class ItemExtras(models.Model):
+    extras = models.ForeignKey(
+        'Extras', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True)
+
+
+class Extras(models.Model):
+    items = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+    name = models.CharField(max_length=255, null=True)
+    price = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True)
+
+
 class Payments(models.Model):
     order = models.ForeignKey(
         'Orders', null=True, blank=True, on_delete=models.CASCADE
@@ -149,7 +177,7 @@ class OrderItems(models.Model):
     item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
-    quanity = models.IntegerField(null=True, blank=True)
+    quantity = models.IntegerField(null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=3, null=True)
 
 
@@ -167,4 +195,4 @@ class Cart(models.Model):
     item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
-    quanity = models.IntegerField(null=True, blank=True)
+    quantity = models.IntegerField(null=True, blank=True)

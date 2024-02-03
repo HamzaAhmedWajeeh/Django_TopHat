@@ -109,7 +109,7 @@ class CreateTokenView(ObtainAuthToken):
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 
-class ManageUserView(generics.RetrieveUpdateAPIView):
+class ManageUserView(generics.RetrieveUpdateDestroyAPIView):
     """manage the authenticated user"""
     serializer_class = UserSerializer
     authentication_classes = [authentication.TokenAuthentication]

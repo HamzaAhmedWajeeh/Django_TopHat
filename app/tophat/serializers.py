@@ -7,7 +7,9 @@ from core.models import(
     Orders,
     OrderItems,
     LoyaltyPoints,
-    # Cart
+    # Cart,
+    ItemExtras,
+    Extras,
 )
 from rest_framework.response import Response
 from rest_framework import (
@@ -92,7 +94,7 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = OrderItems
-        fields = ['item', 'quanity']
+        fields = ['item', 'quantity']
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(many=True)
@@ -100,3 +102,30 @@ class OrderSerializer(serializers.ModelSerializer):
     class Meta:
         model = Orders
         fields = ['amount', 'order_status', 'payment_status', 'items']
+
+
+class ExtrasSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Extras
+        fields = [
+            'id', 'items', 'name', 'price'
+            ]
+        read_only_fields = [
+            'creation_date', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date', 'id'
+            ]
+
+
+class ItemExtrasSerializer(serializers.ModelSerializer):
+    extras = ExtrasSerializer()
+
+    class Meta:
+        model = ItemExtras
+        fields = [
+            'id', 'extras', 'creation_date', 'created_by',
+            'last_update_date', 'last_updated_by', 'last_update_login'
+            ]
+        read_only_fields = [
+            'id', 'creation_date', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date'
+            ]

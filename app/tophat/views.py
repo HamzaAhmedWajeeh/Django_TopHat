@@ -1,21 +1,27 @@
+from django.shortcuts import get_object_or_404
 from rest_framework import (
     generics,
     authentication,
     viewsets,
     status
 )
+from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from core.permissions import IsAdminUser, IsOwnerOrAdmin, IsAdminUserOrReadOnly
 from core.models import(
     Categories,
+    Extras,
     Feedback,
+    ItemExtras,
     MenuItems,
     LoyaltyPoints
 )
 from .serializers import(
     CategoriesSerializer,
+    ExtrasSerializer,
     FeedbackSerializer,
+    ItemExtrasSerializer,
     MenuItemsSerializer,
     LoyaltyPointsSerializer,
 )
@@ -220,3 +226,49 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
         user = self.request.user
         loyalty_points_instance = LoyaltyPoints.objects.get(user=user)
         return loyalty_points_instance
+
+
+# Menu Items Extras START
+class ExtrasListByItemView(generics.ListAPIView):
+    serializer_class = ExtrasSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        item_id = self.kwargs['item_id']
+        return Extras.objects.filter(items=item_id)
+
+
+class ExtrasDeleteByItemID(generics.DestroyAPIView):
+    serializer_class = ExtrasSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        item_id = self.kwargs['item_id']
+
+        if not Extras.objects.filter(items=item_id).exists():
+            return Response(
+                {"message": f"No Extras records found for item_id={item_id}."},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        Extras.objects.filter(items=item_id).delete()
+
+        return Response(
+            {"message": f"All Extras records for item_id={item_id} deleted successfully."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+class ExtrasPostByItem(generics.CreateAPIView):
+    serializer_class = ExtrasSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+
+class ExtrasUpdate(generics.RetrieveUpdateDestroyAPIView):
+    queryset = Extras.objects.all()
+    serializer_class = ExtrasSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
