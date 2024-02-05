@@ -134,7 +134,7 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item', 'quanity', 'total']
+        fields = ['id', 'user', 'item', 'quantity', 'total']
 
         read_only_fields = ['id', 'user']
 

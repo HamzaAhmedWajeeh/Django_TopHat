@@ -340,7 +340,7 @@ class CartGetView(generics.ListAPIView):
         for item in serializer.data:
             cart_item_data = {
                 'item': MenuItems.objects.get(pk=item['item']).name if 'item' in item else '',
-                'quanity': item['quanity'],
+                'quantity': item['quantity'],
                 'total': item['total']
             }
             cart_items_data.append(cart_item_data)
@@ -400,15 +400,15 @@ class AddToCartView(generics.CreateAPIView):
 
         if cart_item:
             # Update existing cart item
-            cart_item.quanity += quantity
-            cart_item.total = calculate_total(item.price, cart_item.quanity)
+            cart_item.quantity += quantity
+            cart_item.total = calculate_total(item.price, cart_item.quantity)
             cart_item.save()
         else:
             # Create a new cart item
-            Cart.objects.create(user=user, item=item, quanity=quantity, total=total)
+            Cart.objects.create(user=user, item=item, quantity=quantity, total=total)
 
         cart_items = Cart.objects.filter(user=user)
-        cart_data = [{'item': item.item.name, 'quantity': item.quanity, 'total': str(item.total)} for item in cart_items]
+        cart_data = [{'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total)} for item in cart_items]
         total_price = sum(item.total for item in cart_items)
 
         return Response({
