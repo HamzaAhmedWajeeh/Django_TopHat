@@ -37,14 +37,14 @@ class CategoriesListAPIView(generics.ListAPIView):
     serializer_class = CategoriesSerializer
     queryset = Categories.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class CategoriesDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CategoriesSerializer
     queryset = Categories.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class CategoriesUpdateAPIView(generics.UpdateAPIView):
@@ -57,13 +57,13 @@ class CategoriesUpdateAPIView(generics.UpdateAPIView):
 class CategoriesCreateAPIView(generics.CreateAPIView):
     serializer_class = CategoriesSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
 
 
 class CategoriesDeleteAPIView(generics.DestroyAPIView):
     serializer_class = CategoriesSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
     queryset = Categories.objects.all()
 
     def delete(self, request, *args, **kwargs):
@@ -139,27 +139,27 @@ class MenuItemsListAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
     queryset = MenuItems.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class MenuItemsRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = MenuItemsSerializer
     queryset = MenuItems.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class MenuItemsUpdateAPIView(generics.UpdateAPIView):
     serializer_class = MenuItemsSerializer
     queryset = MenuItems.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
 
 class MenuItemsDeleteAPIView(generics.DestroyAPIView):
     serializer_class = MenuItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
     queryset = MenuItems.objects.all()
 
     def delete(self, request, *args, **kwargs):
@@ -169,13 +169,13 @@ class MenuItemsDeleteAPIView(generics.DestroyAPIView):
 class MenuItemsCreateAPIView(generics.CreateAPIView):
     serializer_class = MenuItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAdminUser, IsAuthenticated]
 
 
 class MenuItemsListByCategoryAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         category = self.kwargs.get('category_id')
@@ -188,7 +188,7 @@ class LoyaltyPointsCreation(generics.CreateAPIView):
     queryset = LoyaltyPoints.objects.all()
     serializer_class = LoyaltyPointsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
 
 class LoyaltyPointsRedemption(generics.UpdateAPIView):
@@ -236,7 +236,7 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
 class ExtrasListByItemView(generics.ListAPIView):
     serializer_class = ExtrasSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         item_id = self.kwargs['item_id']
@@ -246,7 +246,7 @@ class ExtrasListByItemView(generics.ListAPIView):
 class ExtrasDeleteByItemID(generics.DestroyAPIView):
     serializer_class = ExtrasSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsAdminUser]
 
     def destroy(self, request, *args, **kwargs):
         item_id = self.kwargs['item_id']
@@ -282,7 +282,7 @@ class ExtrasUpdate(generics.RetrieveUpdateDestroyAPIView):
 class CartDeleteAll(generics.DestroyAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         user = self.request.user
@@ -298,7 +298,7 @@ class CartDeleteAll(generics.DestroyAPIView):
 class CartDeleteItem(generics.DestroyAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         cart_id = self.kwargs['id']
@@ -322,7 +322,7 @@ class CartDeleteItem(generics.DestroyAPIView):
 class CartGetView(generics.ListAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user_id = self.request.user
@@ -351,7 +351,7 @@ class CartGetView(generics.ListAPIView):
 class CartUpdateQuantity(generics.UpdateAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
         cart_id = self.kwargs['cart_id']
@@ -382,7 +382,7 @@ class CartUpdateQuantity(generics.UpdateAPIView):
 class AddToCartView(generics.CreateAPIView):
     serializer_class = CartItemCreateSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
+    # permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
