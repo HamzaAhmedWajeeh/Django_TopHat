@@ -34,12 +34,12 @@ class UserManager(BaseUserManager):
 class User(AbstractBaseUser, PermissionsMixin):
     """USER in the system"""
     email = models.EmailField(max_length=255, unique=True)
-    name = models.CharField(max_length=255,null=True)
-    address = models.CharField(max_length=255, null=True)
-    city = models.CharField(max_length=255, null=True)
-    state = models.CharField(max_length=255, null=True)
-    post_code = models.CharField(max_length=255, null=True)
-    phone = models.CharField(max_length=255, null=True)
+    name = models.CharField(max_length=255,null=True, blank=True)
+    address = models.CharField(max_length=255, null=True, blank=True)
+    city = models.CharField(max_length=255, null=True, blank=True)
+    state = models.CharField(max_length=255, null=True, blank=True)
+    post_code = models.CharField(max_length=255, null=True, blank=True)
+    phone = models.CharField(max_length=255, null=True, blank=True)
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)
     verified = models.BooleanField(default=False)
@@ -71,7 +71,7 @@ class Categories(models.Model):
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now_add=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
-    last_update_login = models.IntegerField(null=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -81,13 +81,13 @@ class Feedback(models.Model):
     user = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.CASCADE
         )
-    message = models.CharField(max_length=450, null=True)
+    message = models.CharField(max_length=450, null=True, blank=True)
     # Who Columns
     creation_date = models.DateTimeField(auto_now=True)
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now_add=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
-    last_update_login = models.IntegerField(null=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.user
@@ -100,12 +100,12 @@ class MenuItems(models.Model):
     category = models.ForeignKey(
         'Categories', null=True, blank=True, on_delete=models.CASCADE
         )
-    image = models.ImageField(null=True)
-    image1 = models.ImageField(null=True)
-    image2 = models.ImageField(null=True)
-    image3 = models.ImageField(null=True)
-    image4 = models.ImageField(null=True)
-    image5 = models.ImageField(null=True)
+    image = models.ImageField(null=True, blank=True)
+    image1 = models.ImageField(null=True, blank=True)
+    image2 = models.ImageField(null=True, blank=True)
+    image3 = models.ImageField(null=True, blank=True)
+    image4 = models.ImageField(null=True, blank=True)
+    image5 = models.ImageField(null=True, blank=True)
 
     def __str__(self):
         return self.name
@@ -121,22 +121,22 @@ class ItemExtras(models.Model):
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now_add=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
-    last_update_login = models.IntegerField(null=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
 
 class Extras(models.Model):
     items = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
-    name = models.CharField(max_length=255, null=True)
-    price = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+    name = models.CharField(max_length=255, null=True, blank=True)
+    price = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
 
     # who columns
     creation_date = models.DateTimeField(auto_now=True)
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now_add=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
-    last_update_login = models.IntegerField(null=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
 
 class Payments(models.Model):
@@ -154,7 +154,7 @@ class Payments(models.Model):
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now_add=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
-    last_update_login = models.IntegerField(null=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
 
 class Orders(models.Model):
@@ -164,12 +164,12 @@ class Orders(models.Model):
     payment = models.ForeignKey(
         'Payments', null=True, blank=True, on_delete=models.CASCADE
         )
-    order_date = models.DateField(null=True)
-    order_time = models.TimeField(null=True)
+    order_date = models.DateField(null=True, blank=True)
+    order_time = models.TimeField(null=True, blank=True)
     date = models.DateTimeField(auto_now=True)
-    amount = models.DecimalField(max_digits=20, decimal_places=3, null=True)
-    order_status = models.CharField(max_length=30, null=True)
-    payment_status = models.CharField(max_length=30, null=True)
+    amount = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    order_status = models.CharField(max_length=30, null=True, blank=True)
+    payment_status = models.CharField(max_length=30, null=True, blank=True)
 
 
 class OrderItems(models.Model):
@@ -180,14 +180,14 @@ class OrderItems(models.Model):
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
     quantity = models.IntegerField(null=True, blank=True)
-    total = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+    total = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
 
 
 class LoyaltyPoints(models.Model):
     user = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.CASCADE
         )
-    points = models.DecimalField(max_digits=37, decimal_places=2, null=True)
+    points = models.DecimalField(max_digits=37, decimal_places=2, null=True, blank=True)
 
 
 class Cart(models.Model):
@@ -197,5 +197,5 @@ class Cart(models.Model):
     item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
-    quanity = models.IntegerField(null=True, blank=True)
+    quantity = models.IntegerField(null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
