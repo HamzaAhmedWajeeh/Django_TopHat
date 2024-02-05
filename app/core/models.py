@@ -164,6 +164,8 @@ class Orders(models.Model):
     payment = models.ForeignKey(
         'Payments', null=True, blank=True, on_delete=models.CASCADE
         )
+    order_date = models.DateField(null=True)
+    order_time = models.TimeField(null=True)
     date = models.DateTimeField(auto_now=True)
     amount = models.DecimalField(max_digits=20, decimal_places=3, null=True)
     order_status = models.CharField(max_length=30, null=True)

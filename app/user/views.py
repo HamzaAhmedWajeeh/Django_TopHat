@@ -18,6 +18,7 @@ from django.utils.translation import gettext_lazy as _
 from user.serializers import (
     # ForgetPasswordConfirmSerializer,
     # ForgetPasswordSerializer,
+    AdminAuthTokenSerializer,
     UserSerializer,
     AuthTokenSerializer,
     UserUpdateSerializer,
@@ -93,7 +94,6 @@ class CreateTokenView(ObtainAuthToken):
             data=request.data, context={'request': request}
             )
         user = serializer.validate(request.data)
-        print(user)
         token, created = Token.objects.get_or_create(user=user)
 
         if not user.verified:
@@ -102,10 +102,38 @@ class CreateTokenView(ObtainAuthToken):
                 'user_id': user.id,
                 'email': user.email,
                 'verified': user.verified,
+                'name': user.name
             })
         else:
             return Response({
                 'detail': _('User not verified.'),
+            }, status=status.HTTP_401_UNAUTHORIZED)
+
+
+class CreateAdminTokenView(ObtainAuthToken):
+    """Create a new auth token for admin user"""
+    serializer_class = AdminAuthTokenSerializer
+    renderer_classes = api_settings.DEFAULT_RENDERER_CLASSES
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(
+            data=request.data, context={'request': request}
+            )
+        user = serializer.validate(request.data)
+        token, created = Token.objects.get_or_create(user=user)
+
+        if not user.verified:
+            return Response({
+                'token': token.key,
+                'user_id': user.id,
+                'email': user.email,
+                'verified': user.verified,
+                'name': user.name,
+                'is_staff': user.is_staff
+            })
+        else:
+            return Response({
+                'detail': _('Only Admin users allowed.'),
             }, status=status.HTTP_401_UNAUTHORIZED)
 
 

@@ -29,6 +29,11 @@ urlpatterns = [
         name='token'
         ),
     path(
+        'admin/token/',
+        views.CreateAdminTokenView.as_view(),
+        name='admin-token'
+        ),
+    path(
         'me/',
         views.ManageUserView.as_view(),
         name='me'

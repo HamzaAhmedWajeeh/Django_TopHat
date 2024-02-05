@@ -68,7 +68,7 @@ class UserSerializer(serializers.ModelSerializer):
 class UserUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = get_user_model()
-        fields = ['password', 'name']
+        fields = ['password', 'name', 'address', 'city', 'state', 'post_code', 'phone']
         extra_kwargs = {"password": {"write_only": True, "min_length": 5}}
 
     def update(self, instance, validated_data):
@@ -99,6 +99,32 @@ class AuthTokenSerializer(serializers.Serializer):
             password=password
         )
         if not user:
+            msg = _("Unable to authenticate with provided credentials!")
+            raise serializers.ValidationError(msg, code='authorization')
+        return user
+
+
+class AdminAuthTokenSerializer(serializers.Serializer):
+    """Serializer for the user Auth Token"""
+    email = serializers.EmailField()
+    password = serializers.CharField(
+        style={"input_type": 'password'},
+        trim_whitespace=False
+    )
+
+    def validate(self, attrs):
+        '''validate and authenticate admin user'''
+        email = attrs.get('email')
+        password = attrs.get('password')
+        user = authenticate(
+            request=self.context.get('request'),
+            username=email,
+            password=password,
+        )
+        if user and not user.is_staff:
+            msg = _("Only Admin Users Allowed.")
+            raise serializers.ValidationError(msg, code='authorization')
+        elif not user:
             msg = _("Unable to authenticate with provided credentials!")
             raise serializers.ValidationError(msg, code='authorization')
         return user
