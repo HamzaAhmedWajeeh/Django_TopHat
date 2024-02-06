@@ -39,6 +39,9 @@ class CategoriesListAPIView(generics.ListAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     # permission_classes = [IsAuthenticated]
 
+    def get_queryset(self):
+        return Categories.objects.all().order_by('-creation_date')
+
 
 class CategoriesDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CategoriesSerializer
