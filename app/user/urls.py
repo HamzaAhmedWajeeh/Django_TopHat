@@ -38,6 +38,11 @@ urlpatterns = [
         views.ManageUserView.as_view(),
         name='me'
         ),
+    path(
+        'get/email/',
+        views.GetUserByEmail.as_view(),
+        name='get-user-by-email'
+    ),
     # path(
     #     'password-reset/',
     #     views.UserResetPassword.as_view(),

@@ -45,12 +45,8 @@ class UserAdmin(BaseUserAdmin):
 
 admin.site.register(models.User, UserAdmin)
 admin.site.register(models.Categories)
-admin.site.register(models.Feedback)
 admin.site.register(models.MenuItems)
-admin.site.register(models.ItemExtras)
 admin.site.register(models.Extras)
 admin.site.register(models.Payments)
 admin.site.register(models.Orders)
 admin.site.register(models.OrderItems)
-admin.site.register(models.LoyaltyPoints)
-admin.site.register(models.Cart)

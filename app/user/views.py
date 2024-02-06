@@ -2,6 +2,7 @@
 Views for the User API
 """
 from rest_framework import generics, authentication, permissions
+from core.permissions import IsAdminUser
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 from rest_framework.response import Response
@@ -82,6 +83,26 @@ class CreateAdminUserView(generics.CreateAPIView):
 #                 {'detail': 'Invalid or already verified token'},
 #                 status=status.HTTP_400_BAD_REQUEST
 #                 )
+
+
+class GetUserByEmail(generics.GenericAPIView):
+    queryset = get_user_model().objects.all()
+    serializer_class = UserSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def post(self, request):
+        email = request.data.get('email')
+        if not email:
+            return Response({"error": "Email parameter is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            user = self.queryset.get(email=email)
+        except get_user_model().DoesNotExist:
+            return Response({"error": "User not found"}, status=status.HTTP_404_NOT_FOUND)
+
+        serializer = self.serializer_class(user)
+        return Response(serializer.data)
 
 
 class CreateTokenView(ObtainAuthToken):

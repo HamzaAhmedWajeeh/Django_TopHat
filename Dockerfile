@@ -21,7 +21,6 @@ RUN adduser --disabled-password django-user
 
 # Copy requirements for dev and prod
 COPY ./requirements.txt /tmp/requirements.txt
-COPY ./requirements.txt /tmp/requirements.txt
 
 # Install packages
 RUN python -m venv /py && \
