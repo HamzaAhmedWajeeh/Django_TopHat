@@ -343,7 +343,7 @@ class CartGetView(generics.ListAPIView):
         for item in serializer.data:
             cart_item_data = {
                 'item_id': item['id'],
-                'item': MenuItems.objects.get(pk=item['item']).name if 'item' in item else '',
+                'item_name': MenuItems.objects.get(pk=item['item']).name if 'item' in item else '',
                 'quantity': item['quantity'],
                 'total': item['total']
             }
