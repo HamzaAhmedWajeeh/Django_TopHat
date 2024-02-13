@@ -43,5 +43,7 @@ urlpatterns = [
     path('cart/update/', views.CartUpdateQuantity.as_view(), name='cart-update'),
     path('cart/get/', views.CartGetView.as_view(), name='cart-get'),
 
+    path('statistics/', views.Statistics.as_view(), name='calculate_statistics'),
+
     path('', include(router.urls)),
 ]

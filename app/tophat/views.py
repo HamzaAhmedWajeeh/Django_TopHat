@@ -5,6 +5,8 @@ from rest_framework import (
     viewsets,
     status
 )
+from django.http import JsonResponse
+from django.db import connection
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
@@ -420,3 +422,55 @@ class AddToCartView(generics.CreateAPIView):
             "cart": cart_data,
             "total_price": str(total_price),
         }, status=status.HTTP_201_CREATED)
+
+
+class GetDataBase(generics.GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [authentication.TokenAuthentication]
+
+    @staticmethod
+    def fillna_based_on_dtype(df):
+        for col in df.columns:
+            if df[col].dtype == "float64":
+                df[col].fillna(-1.0, inplace=True)
+            elif df[col].dtype == "object":
+                df[col].fillna("unavilable", inplace=True)
+            elif df[col].dtype == "int64":
+                df[col].fillna(-1, inplace=True)
+            elif df[col].dtype == "bool":
+                df[col].fillna(False, inplace=True)
+        return df
+
+
+class Statistics(GetDataBase):
+    serializer_class = CartItemCreateSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser]
+
+    def get(self, request):
+        query = """
+            SELECT
+    COUNT(DISTINCT o.id) AS total_orders,
+    SUM(o.amount) AS total_sales,
+    (SELECT COUNT(DISTINCT id) FROM core_user WHERE verified = 1 AND is_staff = 0) AS total_verified_users
+FROM
+    core_orders o
+INNER JOIN
+    core_user u ON o.user_id = u.id
+WHERE
+    u.verified = 1 AND u.is_staff = 0;
+
+        """
+        with connection.cursor() as cursor:
+            cursor.execute(query)
+            row = cursor.fetchone()
+            total_orders = row[0]
+            total_sales = row[1]
+            total_users = row[2]
+
+        data = {
+            "total_orders": total_orders,
+            "total_sales": total_sales,
+            "total_verified_users": total_users
+        }
+        return Response(data, status=status.HTTP_200_OK)
