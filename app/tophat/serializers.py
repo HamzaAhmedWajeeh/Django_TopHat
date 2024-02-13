@@ -11,6 +11,7 @@ from core.models import(
     ItemExtras,
     Extras,
 )
+from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import (
     status,
@@ -31,6 +32,15 @@ class CategoriesSerializer(serializers.ModelSerializer):
             'id', 'creation_date', 'created_by',
             'price', 'last_updated_by', 'last_update_login'
             ]
+
+    def validate_name(self, value):
+        # Check if a category with the same name already exists
+        if Categories.objects.filter(name=value).exists():
+            raise ValidationError("A category with this name already exists.")
+        return value
+
+    def create(self, validated_data):
+        return Categories.objects.create(**validated_data)
 
 
 class FeedbackSerializer(serializers.ModelSerializer):
