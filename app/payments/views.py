@@ -53,7 +53,7 @@ class CreatePayment(GenericAPIView):
 
             payment_intent = stripe.PaymentIntent.create(
                 customer=customer.id,
-                currency='usd',
+                currency='aud',
                 amount=int(total_amount * 100),
                 confirm=True,
                 return_url="http://localhost:9001/",

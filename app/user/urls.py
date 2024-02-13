@@ -18,11 +18,11 @@ urlpatterns = [
         views.CreateAdminUserView.as_view(),
         name='create-admin'
     ),
-    # path(
-    #     'verify/<str:token>/',
-    #     views.UserVerificationView.as_view(),
-    #     name='verify'
-    #     ),
+    path(
+        'verify/<str:token>/',
+        views.UserVerificationView.as_view(),
+        name='verify'
+        ),
     path(
         'token/',
         views.CreateTokenView.as_view(),
@@ -43,14 +43,14 @@ urlpatterns = [
         views.GetUserByEmail.as_view(),
         name='get-user-by-email'
     ),
-    # path(
-    #     'password-reset/',
-    #     views.UserResetPassword.as_view(),
-    #     name='password_reset'
-    #     ),
-    # path(
-    #     'password-reset-confirm/',
-    #     views.UserResetPasswordConfirm.as_view(),
-    #     name='password_reset'
-    #     ),
+    path(
+        'password-reset/',
+        views.UserResetPassword.as_view(),
+        name='password_reset'
+        ),
+    path(
+        'password-reset-confirm/',
+        views.UserResetPasswordConfirm.as_view(),
+        name='password_reset'
+        ),
 ]
