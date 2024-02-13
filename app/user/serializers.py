@@ -6,15 +6,15 @@ from django.contrib.auth import (
     authenticate,
     )
 from django.utils.translation import gettext as _
-# from django.core.mail import send_mail
+from django.core.mail import send_mail
 from django.conf import settings
-# from django.template.loader import render_to_string
+from django.template.loader import render_to_string
 
 from rest_framework import serializers
 # from django.utils import timezone
-# from core.models import (
-#     User
-#     )
+from core.models import (
+    User
+    )
 
 from user.utils import decrypt_email
 
@@ -36,18 +36,17 @@ class UserSerializer(serializers.ModelSerializer):
         user = get_user_model().objects.create_user(**validated_data)
         user.generate_verification_token()
 
-        # subject = "Verify Your Email"
-        # verification_link = f"https://app.smmart.ai/#/verify?verification_token={user.verification_token}"
-        # html_message = render_to_string(
-        #     'accounts/verify_email.html', {'verification_link': verification_link}
-        #     )
-        # numnber_of_email = send_mail(
-        #     subject,
-        #     message=None,
-        #     from_email=settings.DEFAULT_FROM_EMAIL,
-        #     recipient_list=[user.email],
-        #     html_message=html_message)
-        # print(f"{numnber_of_email} sent to user {user.email}!")
+        subject = "Verify Your Email"
+        verification_link = f"https://app.smmart.ai/#/verify?verification_token={user.verification_token}"
+        html_message = render_to_string(
+            'accounts/verify_email.html', {'verification_link': verification_link}
+            )
+        numnber_of_email = send_mail(
+            subject,
+            message=None,
+            from_email=settings.DEFAULT_FROM_EMAIL,
+            recipient_list=[user.email],
+            html_message=html_message)
         return user
 
     def update(self, instance, validated_data) -> get_user_model():

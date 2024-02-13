@@ -53,9 +53,6 @@ class CreateAdminUserView(generics.CreateAPIView):
     queryset = get_user_model().objects.all()
     serializer_class = UserSerializer
 
-    def perform_create(self, serializer):
-        user = serializer.save(is_staff=True)
-
 
 class UserVerificationView(APIView):
     def get(self, request, token):
