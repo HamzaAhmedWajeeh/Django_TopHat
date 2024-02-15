@@ -287,7 +287,7 @@ class ExtrasUpdate(generics.RetrieveUpdateDestroyAPIView):
 class CartDeleteAll(generics.DestroyAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         user = self.request.user
@@ -303,7 +303,7 @@ class CartDeleteAll(generics.DestroyAPIView):
 class CartDeleteItem(generics.DestroyAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def delete(self, request, *args, **kwargs):
         cart_id = self.kwargs['id']
@@ -327,7 +327,7 @@ class CartDeleteItem(generics.DestroyAPIView):
 class CartGetView(generics.ListAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         user_id = self.request.user
@@ -357,11 +357,18 @@ class CartGetView(generics.ListAPIView):
 class CartUpdateQuantity(generics.UpdateAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-        cart_id = self.kwargs['cart_id']
+        cart_id = request.data.get('item')
         new_quantity = request.data.get('quantity')
+
+        # Validate the item ID
+        if not cart_id:
+            return Response(
+                {"message": "Item ID is required."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
         try:
             cart_item = Cart.objects.get(id=cart_id)
@@ -371,24 +378,33 @@ class CartUpdateQuantity(generics.UpdateAPIView):
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        if new_quantity is not None and isinstance(new_quantity, int) and new_quantity > 0:
-            cart_item.quantity = new_quantity
-            cart_item.save()
-            return Response(
-                {"message": f"Quantity updated for cart item with id={cart_id}."},
-                status=status.HTTP_200_OK
-            )
-        else:
+        # Validate the new quantity
+        if new_quantity is None or not isinstance(new_quantity, int) or new_quantity <= 0:
             return Response(
                 {"message": "Invalid quantity. Please provide a positive integer."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Update the quantity
+        cart_item.quantity = new_quantity
+        cart_item.total = calculate_total(cart_item.item.price, new_quantity)  # Update the total
+        cart_item.save()
+
+        # Fetch all cart items again after updating
+        cart_items = Cart.objects.filter(user=request.user)
+        cart_data = [{'cart_id': item.id, 'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item.item.id} for item in cart_items]
+        total_price = sum(item.total for item in cart_items)
+
+        return Response(
+            {"message": f"Quantity updated for cart item with id={cart_id}.", "cart": cart_data, "total_price": str(total_price)},
+            status=status.HTTP_200_OK
+        )
+
 
 class AddToCartView(generics.CreateAPIView):
     serializer_class = CartItemCreateSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def create(self, request, *args, **kwargs):
         serializer = self.get_serializer(data=request.data)
@@ -414,7 +430,7 @@ class AddToCartView(generics.CreateAPIView):
             Cart.objects.create(user=user, item=item, quantity=quantity, total=total)
 
         cart_items = Cart.objects.filter(user=user)
-        cart_data = [{'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item_id} for item in cart_items]
+        cart_data = [{'cart_id': item.id, 'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item_id} for item in cart_items]
         total_price = sum(item.total for item in cart_items)
 
         return Response({

@@ -34,7 +34,6 @@ class CategoriesSerializer(serializers.ModelSerializer):
             ]
 
     def validate_name(self, value):
-        # Check if a category with the same name already exists
         if Categories.objects.filter(name=value).exists():
             raise ValidationError("A category with this name already exists.")
         return value
