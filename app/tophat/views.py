@@ -17,9 +17,10 @@ from core.models import(
     Categories,
     Extras,
     Feedback,
-    ItemExtras,
     MenuItems,
-    LoyaltyPoints
+    LoyaltyPoints,
+    OrderItems,
+    Orders
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -27,9 +28,10 @@ from .serializers import(
     CategoriesSerializer,
     ExtrasSerializer,
     FeedbackSerializer,
-    ItemExtrasSerializer,
     MenuItemsSerializer,
     LoyaltyPointsSerializer,
+    OrderSerializer,
+    OrderItemSerializer
 )
 from decimal import Decimal
 
@@ -343,13 +345,22 @@ class CartGetView(generics.ListAPIView):
         cart_items_data = []
 
         for item in serializer.data:
-            cart_item_data = {
-                'item_id': item['id'],
-                'item_name': MenuItems.objects.get(pk=item['item']).name if 'item' in item else '',
-                'quantity': item['quantity'],
-                'total': item['total']
-            }
-            cart_items_data.append(cart_item_data)
+            try:
+                menu_item = MenuItems.objects.get(pk=item['item'])
+                item_name = menu_item.name
+                item_image = menu_item.image.url if menu_item.image else ''
+            except MenuItems.DoesNotExist:
+                item_name = ''
+                item_image = ''
+
+        cart_item_data = {
+            'item_id': item['id'],
+            'item_name': item_name,
+            'item_image': item_image,
+            'quantity': item['quantity'],
+            'total': item['total']
+        }
+        cart_items_data.append(cart_item_data)
 
         return Response(cart_items_data)
 
@@ -439,7 +450,7 @@ class AddToCartView(generics.CreateAPIView):
             "total_price": str(total_price),
         }, status=status.HTTP_201_CREATED)
 
-
+# Statistics for Admin
 class GetDataBase(generics.GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [authentication.TokenAuthentication]
@@ -490,3 +501,57 @@ WHERE
             "total_verified_users": total_users
         }
         return Response(data, status=status.HTTP_200_OK)
+
+
+class OrderHistory(generics.ListAPIView):
+    serializer_class = OrderSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Orders.objects.filter(
+            user=user,
+            order_status='completed',
+            payment_status='succeeded'
+        )
+        return queryset
+
+
+# Re Order last ORDER
+class ReOrderLastOrder(generics.GenericAPIView):
+    serializer_class = OrderSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        user = self.request.user
+        last_order = Orders.objects.filter(user=user).order_by('-date').first()
+
+        if not last_order:
+            return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
+
+        # Retrieve order items from the last order
+        last_order_items = OrderItems.objects.filter(order=last_order)
+
+        # Create a new order with the same items
+        new_order_data = {
+            "user": user,
+            "order_date": last_order.order_date,
+            "order_time": last_order.order_time,
+            "amount": last_order.amount,
+            "order_status": "pending",  # or any default status you want for the new order
+            "payment_status": "pending",  # or any default status you want for the new order
+        }
+
+        new_order_serializer = OrderSerializer(data=new_order_data)
+        if new_order_serializer.is_valid():
+            new_order = new_order_serializer.save()
+
+            # Create order items for the new order
+            for item in last_order_items:
+                OrderItems.objects.create(order=new_order, item=item.item, quantity=item.quantity, total=item.total)
+
+            return Response(new_order_serializer.data, status=status.HTTP_201_CREATED)
+        else:
+            return Response(new_order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
