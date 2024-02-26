@@ -113,11 +113,61 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['amount', 'order_status', 'payment_status', 'items', 'order_date', 'order_time']
 
 
+class OrderItemsSerializer(serializers.Serializer):
+    """Serializer for Order Items Object"""
+
+    user = 'user.serializers.UserSerializer'
+
+    user_id = serializers.IntegerField(required=False)
+    order_id = serializers.IntegerField(required=False)
+    item_id = serializers.IntegerField(required=False)
+    size_id = serializers.IntegerField(required=False)
+    extras = serializers.ListField()
+    kitchen_notes = serializers.ListField()
+    quantity = serializers.IntegerField(required=False)
+    total = serializers.IntegerField(required=False)
+
+    def create(self, validated_data):
+        """Create and return a Order Items instance"""
+        order_id = validated_data.pop('order_id', None)
+        item_id = validated_data.pop('item_id', None)
+        size_id = validated_data.pop('size_id', None)
+        quantity = validated_data.pop('quantity', None)
+        extras = validated_data.pop('extras', [])
+        kitchen_notes = validated_data.pop('kitchen_notes', [])
+        total = validated_data.pop('total', None)
+
+        extras = ",".join(extras)
+        kitchen_notes = ",".join(kitchen_notes)
+
+        orderItems = OrderItems.objects.create(
+            order=order_id,
+            item=item_id,
+            size=size_id,
+            extras=extras,
+            kitchen_notes=kitchen_notes,
+            quantity=quantity,
+            total=total,
+            **validated_data
+        )
+
+        return orderItems
+
+    def to_representation(self, instance):
+        """Include orderItems_id in the serialized representation"""
+        representation = super().to_representation(instance)
+        representation['order_id'] = instance.id
+        representation['extras'] = instance.platform.split(",")
+        representation['kitchen_notes'] = instance.keywords.split(",")
+
+        return representation
+
+
 class ExtrasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Extras
         fields = [
-            'id', 'items', 'name', 'price'
+            'id', 'menu_item', 'name', 'price'
             ]
         read_only_fields = [
             'creation_date', 'created_by', 'last_updated_by',
@@ -141,31 +191,61 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
+    extras = serializers.ListField(required=False, allow_empty=True)
+    kitchen_notes = serializers.ListField(required=False, allow_empty=True)
+
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item', 'quantity', 'total']
-
+        fields = ['id', 'user', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size']
         read_only_fields = ['id', 'user']
 
-        def validate_quantity(self, value):
-            if value <= 0:
-                raise serializers.ValidationError("Quantity must be a positive integer.")
-            return value
+    def validate_quantity(self, value):
+        if value <= 0:
+            raise serializers.ValidationError("Quantity must be a positive integer.")
+        return value
 
-        def get_item_name(self, obj):
-            cart_items = self.context.get('cart_items', [])
-            item = next((item for item in cart_items if item.id == obj.id), None)
-            return item.item.name if item else ''
+    def get_item_name(self, obj):
+        cart_items = self.context.get('cart_items', [])
+        item = next((item for item in cart_items if item.id == obj.id), None)
+        return item.item.name if item else ''
+
+    # def to_representation(self, instance):
+    #     data = super().to_representation(instance)
+
+    #     # Convert extras and kitchen_notes strings to lists of integers
+    #     extras = instance.extras
+    #     if extras:
+    #         try:
+    #             data['extras'] = [int(item) for item in extras.strip('[]').split(',')]
+    #         except ValueError:
+    #             data['extras'] = []
+
+    #     kitchen_notes = instance.kitchen_notes
+    #     if kitchen_notes:
+    #         try:
+    #             data['kitchen_notes'] = [int(item) for item in kitchen_notes.strip('[]').split(',')]
+    #         except ValueError:
+    #             data['kitchen_notes'] = []
+
+    #     return data
+
+
 
 
 class CartItemCreateSerializer(serializers.Serializer):
-    item_id = serializers.IntegerField()
-    quantity = serializers.IntegerField()
+    item_id = serializers.IntegerField(required=True)
+    quantity = serializers.IntegerField(required=True)
+    user_id = serializers.IntegerField(required=False)
+    size =  serializers.CharField(required=False)
+    total = serializers.DecimalField(required=False, max_digits=20, decimal_places=2)
+    extras = serializers.ListField(required=False, allow_empty=True)
+    kitchen_notes = serializers.ListField(required=False, allow_empty=True)
 
     def validate(self, data):
         item_id = data.get('item_id')
         quantity = data.get('quantity')
 
-        # You can add custom validation logic here
+        if quantity <= 0:
+            raise serializers.ValidationError("Quantity must be a positive integer.")
 
         return data

@@ -96,7 +96,10 @@ class Feedback(models.Model):
 class MenuItems(models.Model):
     name = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=500, null=True)
-    price = models.DecimalField(max_digits=20, decimal_places=3, null=True)
+    price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    large_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    medium_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    small_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
     category = models.ForeignKey(
         'Categories', null=True, blank=True, on_delete=models.CASCADE
         )
@@ -124,12 +127,26 @@ class ItemExtras(models.Model):
     last_update_login = models.IntegerField(null=True, blank=True)
 
 
+class KitchenNotes(models.Model):
+    menu_item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+    name = models.CharField(max_length=300, null=True, blank=True)
+    price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
+
+
 class Extras(models.Model):
-    items = models.ForeignKey(
+    menu_item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
     name = models.CharField(max_length=255, null=True, blank=True)
-    price = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
+    price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 
     # who columns
     creation_date = models.DateTimeField(auto_now=True)
@@ -161,15 +178,27 @@ class Orders(models.Model):
     user = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.CASCADE
         )
-    payment = models.ForeignKey(
-        'Payments', null=True, blank=True, on_delete=models.CASCADE
-        )
     order_date = models.DateField(null=True, blank=True)
     order_time = models.TimeField(null=True, blank=True)
     date = models.DateTimeField(auto_now=True)
     amount = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     order_status = models.CharField(max_length=30, null=True, blank=True)
     payment_status = models.CharField(max_length=30, null=True, blank=True)
+
+
+class Sizes(models.Model):
+    menu_item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+    large = models.BooleanField(default=False, null=True, blank=True)
+    medium = models.BooleanField(default=False, null=True, blank=True)
+    small = models.BooleanField(default=False, null=True, blank=True)
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
 
 class OrderItems(models.Model):
@@ -179,8 +208,11 @@ class OrderItems(models.Model):
     item = models.ForeignKey(
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
+    size = models.CharField(max_length=7, null=True, blank=True)
+    extras = models.CharField(max_length=255, null=True)
+    kitchen_notes = models.CharField(max_length=255, null=True)
     quantity = models.IntegerField(null=True, blank=True)
-    total = models.DecimalField(max_digits=20, decimal_places=3, null=True, blank=True)
+    total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 
 
 class LoyaltyPoints(models.Model):
@@ -198,4 +230,7 @@ class Cart(models.Model):
         'MenuItems', null=True, blank=True, on_delete=models.CASCADE
         )
     quantity = models.IntegerField(null=True, blank=True)
+    size = models.CharField(max_length=7, null=True, blank=True)
+    extras = models.CharField(max_length=255, null=True, blank=True)
+    kitchen_notes = models.CharField(max_length=255, null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)

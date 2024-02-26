@@ -45,5 +45,7 @@ urlpatterns = [
 
     path('statistics/', views.Statistics.as_view(), name='calculate_statistics'),
 
+    path('order/items/create', views.OrderItemsCreateAPIView.as_view(), name='create-order-items'),
+
     path('', include(router.urls)),
 ]

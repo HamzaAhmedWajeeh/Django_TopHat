@@ -5,6 +5,9 @@ from rest_framework import (
     viewsets,
     status
 )
+import json
+from django.core.serializers.json import DjangoJSONEncoder
+from decimal import Decimal
 from django.http import JsonResponse
 from django.db import connection
 from rest_framework.decorators import api_view
@@ -20,7 +23,9 @@ from core.models import(
     MenuItems,
     LoyaltyPoints,
     OrderItems,
-    Orders
+    Orders,
+    KitchenNotes,
+    Sizes
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -31,9 +36,10 @@ from .serializers import(
     MenuItemsSerializer,
     LoyaltyPointsSerializer,
     OrderSerializer,
-    OrderItemSerializer
+    OrderItemsSerializer
 )
 from decimal import Decimal
+from django.db.models import Q
 
 
 # Categories START
@@ -247,7 +253,7 @@ class ExtrasListByItemView(generics.ListAPIView):
 
     def get_queryset(self):
         item_id = self.kwargs['item_id']
-        return Extras.objects.filter(items=item_id)
+        return Extras.objects.filter(menu_item=item_id)
 
 
 class ExtrasDeleteByItemID(generics.DestroyAPIView):
@@ -258,13 +264,13 @@ class ExtrasDeleteByItemID(generics.DestroyAPIView):
     def destroy(self, request, *args, **kwargs):
         item_id = self.kwargs['item_id']
 
-        if not Extras.objects.filter(items=item_id).exists():
+        if not Extras.objects.filter(menu_item=item_id).exists():
             return Response(
                 {"message": f"No Extras records found for item_id={item_id}."},
                 status=status.HTTP_404_NOT_FOUND
             )
 
-        Extras.objects.filter(items=item_id).delete()
+        Extras.objects.filter(menu_item=item_id).delete()
 
         return Response(
             {"message": f"All Extras records for item_id={item_id} deleted successfully."},
@@ -326,6 +332,70 @@ class CartDeleteItem(generics.DestroyAPIView):
         )
 
 
+# class CartGetView(generics.ListAPIView):
+#     serializer_class = CartSerializer
+#     authentication_classes = [authentication.TokenAuthentication]
+#     permission_classes = [IsAuthenticated]
+
+#     def get_queryset(self):
+#         user_id = self.request.user
+#         cart_items = Cart.objects.filter(user=user_id)
+#         return cart_items
+
+#     def list(self, request, *args, **kwargs):
+#         queryset = self.get_queryset()
+#         serializer = self.get_serializer(queryset, many=True)
+#         cart_items_data = []
+
+#         for item in serializer.data:
+#             try:
+#                 # Fetch menu item details
+#                 menu_item = MenuItems.objects.get(pk=item['item'])
+#                 item_name = menu_item.name
+#                 item_image = menu_item.image.url if menu_item.image else ''
+
+#                 # Calculate total for the main item
+#                 total = menu_item.price * item['quantity']
+
+#                 # Fetch extras associated with the specific cart item
+#                 extras_ids = item.get('extras', [])
+#                 print(extras_ids)
+#                 extras_info = [{'name': extra.name, 'price': extra.price} for extra in Extras.objects.filter(pk__in=extras_ids)]
+
+#                 # Calculate extras total price
+#                 extras_total = sum(extra['price'] for extra in extras_info)
+
+#                 # Fetch kitchen notes associated with the specific cart item
+#                 kitchen_notes_ids = item.get('kitchen_notes', [])
+#                 print(kitchen_notes_ids)
+#                 kitchen_notes_info = [{'name': note.name, 'price': note.price} for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_ids)]
+
+#                 # Calculate kitchen notes total price
+#                 kitchen_notes_total = sum(note['price'] for note in kitchen_notes_info)
+
+#                 # Calculate total price including extras and kitchen notes
+#                 total_price = total + extras_total + kitchen_notes_total
+
+#                 # Create cart item data dictionary
+#                 cart_item_data = {
+#                     'item_id': item['id'],
+#                     'item_name': item_name,
+#                     'item_image': item_image,
+#                     'quantity': item['quantity'],
+#                     'total': total_price,
+#                     'extras_info': extras_info,
+#                     'kitchen_notes_info': kitchen_notes_info
+#                 }
+
+#                 # Append cart item data to cart_items_data list
+#                 cart_items_data.append(cart_item_data)
+#             except MenuItems.DoesNotExist:
+#                 # Handle case where MenuItems does not exist
+#                 pass
+
+#         return Response(cart_items_data, status=status.HTTP_200_OK)
+
+
 class CartGetView(generics.ListAPIView):
     serializer_class = CartSerializer
     authentication_classes = [authentication.TokenAuthentication]
@@ -334,35 +404,49 @@ class CartGetView(generics.ListAPIView):
     def get_queryset(self):
         user_id = self.request.user
         cart_items = Cart.objects.filter(user=user_id)
-
-        self.get_serializer().context['cart_items'] = cart_items  # Store cart_items in context
-
         return cart_items
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         serializer = self.get_serializer(queryset, many=True)
-        cart_items_data = []
+        data = serializer.data
 
-        for item in serializer.data:
-            try:
-                menu_item = MenuItems.objects.get(pk=item['item'])
-                item_name = menu_item.name
-                item_image = menu_item.image.url if menu_item.image else ''
-            except MenuItems.DoesNotExist:
-                item_name = ''
-                item_image = ''
+        total_amount = 0  # Initialize total amount
 
-        cart_item_data = {
-            'item_id': item['id'],
-            'item_name': item_name,
-            'item_image': item_image,
-            'quantity': item['quantity'],
-            'total': item['total']
+        # Iterate through each cart item
+        for item_data in data:
+            # Fetch extras information if extras are present
+            if 'extras' in item_data and item_data['extras'] is not None:
+                extras_ids = self.parse_int_list(item_data['extras'])
+                extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
+                item_data['extras_info'] = extras_info
+
+            # Fetch kitchen notes information if kitchen notes are present
+            if 'kitchen_notes' in item_data and item_data['kitchen_notes'] is not None:
+                kitchen_notes_ids = self.parse_int_list(item_data['kitchen_notes'])
+                kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
+                item_data['kitchen_notes_info'] = kitchen_notes_info
+
+            total_amount += float(item_data['total'])  # Add total amount to the overall total
+
+        response_data = {
+            'cart_items': data,
+            'total_amount': '{:.2f}'.format(total_amount)
         }
-        cart_items_data.append(cart_item_data)
 
-        return Response(cart_items_data)
+        return Response(response_data, status=status.HTTP_200_OK)
+
+    def parse_int_list(self, value):
+        try:
+            if isinstance(value, list):  # Check if value is already a list
+                return [int(item.strip()) for item in value if item.strip().isdigit()]
+            elif value:
+                # Split the string by comma and convert each element to int
+                return [int(item.strip()) for item in value.split(',') if item.strip().isdigit()]
+            else:
+                return []
+        except ValueError:
+            return []
 
 
 class CartUpdateQuantity(generics.UpdateAPIView):
@@ -427,28 +511,96 @@ class AddToCartView(generics.CreateAPIView):
 
         item = get_object_or_404(MenuItems, pk=item_id)
 
-        total = calculate_total(item.price, quantity)
-
-        cart_item = Cart.objects.filter(user=user, item=item).first()
-
-        if cart_item:
-            # Update existing cart item
-            cart_item.quantity += quantity
-            cart_item.total = calculate_total(item.price, cart_item.quantity)
-            cart_item.save()
+        # Fetch size data
+        size_name = serializer.validated_data.get('size')
+        if size_name is not None:
+            size_price_field = f"{size_name.lower()}_price"
+            price = getattr(item, size_price_field, item.price)
         else:
-            # Create a new cart item
-            Cart.objects.create(user=user, item=item, quantity=quantity, total=total)
+            price = item.price
 
-        cart_items = Cart.objects.filter(user=user)
-        cart_data = [{'cart_id': item.id, 'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item_id} for item in cart_items]
-        total_price = sum(item.total for item in cart_items)
+        # Calculate total for the main item
+        total = calculate_total(price, quantity)
+
+        # Fetch extras and kitchen notes and calculate their total prices
+        extras_data = serializer.validated_data.get('extras', None)
+        kitchen_notes_data = serializer.validated_data.get('kitchen_notes', None)
+
+        # Fetch prices of extras and kitchen notes for the new item
+        extras_price_total = Decimal('0.0')
+        kitchen_notes_price_total = Decimal('0.0')
+
+        if extras_data is not None:
+            for extra_id in extras_data:
+                extra_price = Extras.objects.filter(pk=extra_id).values_list('price', flat=True).first()
+                if extra_price:
+                    extras_price_total += extra_price
+
+        if kitchen_notes_data is not None:
+            for note_id in kitchen_notes_data:
+                note_price = KitchenNotes.objects.filter(pk=note_id).values_list('price', flat=True).first()
+                if note_price:
+                    kitchen_notes_price_total += note_price
+
+        # Calculate total price including extras and kitchen notes for the new item
+        total_price = total + extras_price_total + kitchen_notes_price_total
+
+        # Check if a cart item with the same item ID and size already exists for the user
+        existing_cart_item = Cart.objects.filter(
+            user=user,
+            item=item,
+            size=size_name,
+            extras=','.join(map(str, extras_data)) if extras_data is not None else None,
+            kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None
+        ).first()
+
+        if existing_cart_item is not None:
+            # Update existing cart item
+            existing_cart_item.quantity += quantity
+            existing_cart_item.total += total_price
+            existing_cart_item.save()
+
+            cart_data = [{
+            'cart_id': existing_cart_item.id if existing_cart_item else None,
+            'item': item.name,
+            'quantity': existing_cart_item.quantity,
+            'total': str(total_price),
+            'item_id': item_id,
+            'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
+            'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
+            'size_info': {'name': size_name} if size_name else {}
+        }]
+
+        else:
+            # Create a new cart item with the extras and kitchen notes associated with the new item only
+            Cart.objects.create(
+                user=user,
+                item=item,
+                quantity=quantity,
+                total=total_price,
+                size=size_name,
+                extras=','.join(map(str, extras_data)) if extras_data is not None else None,
+                kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None
+            )
+
+            # Fetch details only for the newly added item
+            cart_data = [{
+                'cart_id': existing_cart_item.id if existing_cart_item else None,
+                'item': item.name,
+                'quantity': quantity,
+                'total': str(total_price),
+                'item_id': item_id,
+                'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
+    'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
+                'size_info': {'name': size_name} if size_name else {}
+            }]
 
         return Response({
             "message": "Item added to the cart successfully.",
             "cart": cart_data,
             "total_price": str(total_price),
         }, status=status.HTTP_201_CREATED)
+
 
 # Statistics for Admin
 class GetDataBase(generics.GenericAPIView):
@@ -555,3 +707,9 @@ class ReOrderLastOrder(generics.GenericAPIView):
             return Response(new_order_serializer.data, status=status.HTTP_201_CREATED)
         else:
             return Response(new_order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class OrderItemsCreateAPIView(generics.CreateAPIView):
+    serializer_class = OrderItemsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
