@@ -10,6 +10,7 @@ from core.models import(
     Cart,
     ItemExtras,
     Extras,
+    Sizes
 )
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -62,12 +63,24 @@ class MenuItemsSerializer(serializers.ModelSerializer):
     class Meta:
         model = MenuItems
         fields = [
-            'id', 'name', 'description', 'price', 'category',
+            'id', 'name', 'description', 'price', 'category', 'large_price', 'medium_price', 'small_price',
             'image', 'image1', 'image2', 'image3', 'image4', 'image5'
         ]
 
         read_only_fields = [
             'id'
+        ]
+
+
+class SizeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sizes
+        fields = [
+            'menu_item', 'large', 'medium', 'small', 'creation_date', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date', 'id'
+        ]
+        read_only_fields = [
+            'id', 'creation_date', 'created_by'
         ]
 
 

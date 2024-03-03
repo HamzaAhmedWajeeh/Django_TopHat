@@ -4,7 +4,7 @@ from tophat import views
 
 router = DefaultRouter()
 
-# router.register('extras', viewset=views.ExtrasViewSet)
+router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
 
 
 app_name = 'tophat'

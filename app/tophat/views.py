@@ -36,10 +36,11 @@ from .serializers import(
     MenuItemsSerializer,
     LoyaltyPointsSerializer,
     OrderSerializer,
-    OrderItemsSerializer
+    OrderItemsSerializer,
+    SizeSerializer
 )
 from decimal import Decimal
-from django.db.models import Q
+from rest_framework.exceptions import ValidationError
 
 
 # Categories START
@@ -245,7 +246,7 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
         return loyalty_points_instance
 
 
-# Menu Items Extras START
+# Extras START
 class ExtrasListByItemView(generics.ListAPIView):
     serializer_class = ExtrasSerializer
     authentication_classes = [authentication.TokenAuthentication]
@@ -332,68 +333,93 @@ class CartDeleteItem(generics.DestroyAPIView):
         )
 
 
-# class CartGetView(generics.ListAPIView):
-#     serializer_class = CartSerializer
-#     authentication_classes = [authentication.TokenAuthentication]
-#     permission_classes = [IsAuthenticated]
+class CartUpdateQuantity(generics.UpdateAPIView):
+    serializer_class = CartSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
-#     def get_queryset(self):
-#         user_id = self.request.user
-#         cart_items = Cart.objects.filter(user=user_id)
-#         return cart_items
+    def update(self, request, *args, **kwargs):
+        cart_id = request.data.get('item')
+        new_quantity = request.data.get('quantity')
+        extras = request.data.get('extras', [])
+        kitchen_notes = request.data.get('kitchen_notes', [])
+        size = request.data.get('size')
 
-#     def list(self, request, *args, **kwargs):
-#         queryset = self.get_queryset()
-#         serializer = self.get_serializer(queryset, many=True)
-#         cart_items_data = []
+        # Validate the item ID and new quantity
+        if not cart_id or new_quantity is None or not isinstance(new_quantity, int) or new_quantity <= 0:
+            raise ValidationError("Invalid request. Please provide a valid item ID and a positive integer quantity.")
 
-#         for item in serializer.data:
-#             try:
-#                 # Fetch menu item details
-#                 menu_item = MenuItems.objects.get(pk=item['item'])
-#                 item_name = menu_item.name
-#                 item_image = menu_item.image.url if menu_item.image else ''
+        try:
+            cart_item = Cart.objects.get(id=cart_id)
+        except Cart.DoesNotExist:
+            raise ValidationError(f"Cart item with id={cart_id} not found.")
 
-#                 # Calculate total for the main item
-#                 total = menu_item.price * item['quantity']
+        # Fetch the existing quantity and calculate the quantity difference
+        old_quantity = cart_item.quantity
+        quantity_diff = new_quantity - old_quantity
 
-#                 # Fetch extras associated with the specific cart item
-#                 extras_ids = item.get('extras', [])
-#                 print(extras_ids)
-#                 extras_info = [{'name': extra.name, 'price': extra.price} for extra in Extras.objects.filter(pk__in=extras_ids)]
+        # Update the quantity of the cart item
+        cart_item.quantity = new_quantity
 
-#                 # Calculate extras total price
-#                 extras_total = sum(extra['price'] for extra in extras_info)
+        # Fetch the item
+        item = cart_item.item
 
-#                 # Fetch kitchen notes associated with the specific cart item
-#                 kitchen_notes_ids = item.get('kitchen_notes', [])
-#                 print(kitchen_notes_ids)
-#                 kitchen_notes_info = [{'name': note.name, 'price': note.price} for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_ids)]
+        # Fetch prices based on size, extras, and kitchen notes
+        if size:
+            size_price_field = f"{size.lower()}_price"
+            price = getattr(item, size_price_field, None)
+            if price is None:
+                raise ValidationError(f"The specified size '{size}' is not available for the item.")
 
-#                 # Calculate kitchen notes total price
-#                 kitchen_notes_total = sum(note['price'] for note in kitchen_notes_info)
+        else:
+            price = item.price
 
-#                 # Calculate total price including extras and kitchen notes
-#                 total_price = total + extras_total + kitchen_notes_total
+        extras_prices = {}
+        for extra_id in extras:
+            extra = Extras.objects.filter(pk=extra_id).first()
+            if extra:
+                extras_prices[extra_id] = extra.price
+            else:
+                raise ValidationError(f"Extra with ID '{extra_id}' is not available.")
 
-#                 # Create cart item data dictionary
-#                 cart_item_data = {
-#                     'item_id': item['id'],
-#                     'item_name': item_name,
-#                     'item_image': item_image,
-#                     'quantity': item['quantity'],
-#                     'total': total_price,
-#                     'extras_info': extras_info,
-#                     'kitchen_notes_info': kitchen_notes_info
-#                 }
+        kitchen_notes_prices = {}
+        for note_id in kitchen_notes:
+            note = KitchenNotes.objects.filter(pk=note_id).first()
+            if note:
+                kitchen_notes_prices[note_id] = note.price
+            else:
+                raise ValidationError(f"Kitchen note with ID '{note_id}' is not available.")
 
-#                 # Append cart item data to cart_items_data list
-#                 cart_items_data.append(cart_item_data)
-#             except MenuItems.DoesNotExist:
-#                 # Handle case where MenuItems does not exist
-#                 pass
+        # Calculate total price for the cart item
+        total_price = calculate_total_price(price, new_quantity, extras_prices, kitchen_notes_prices)
 
-#         return Response(cart_items_data, status=status.HTTP_200_OK)
+        # Update extras, size, and kitchen notes if provided
+        cart_item.size = size
+        cart_item.extras = ','.join(map(str, extras))
+        cart_item.kitchen_notes = ','.join(map(str, kitchen_notes))
+
+        cart_item.save()
+
+        # Fetch all cart items again after updating
+        cart_items = Cart.objects.filter(user=request.user)
+        cart_data = [{'cart_id': item.id, 'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item.item.id} for item in cart_items]
+        total_price = sum(item.total for item in cart_items)
+
+        return Response(
+            {"message": f"Cart item with ID={cart_id} updated successfully.", "cart": cart_data, "total_price": str(total_price)},
+            status=status.HTTP_200_OK
+        )
+
+def calculate_total_price(base_price, quantity, extras_prices, kitchen_notes_prices):
+    total_price = base_price * quantity
+
+    for price in extras_prices.values():
+        total_price += price
+
+    for price in kitchen_notes_prices.values():
+        total_price += price
+
+    return total_price
 
 
 class CartGetView(generics.ListAPIView):
@@ -447,53 +473,6 @@ class CartGetView(generics.ListAPIView):
                 return []
         except ValueError:
             return []
-
-
-class CartUpdateQuantity(generics.UpdateAPIView):
-    serializer_class = CartSerializer
-    authentication_classes = [authentication.TokenAuthentication]
-    permission_classes = [IsAuthenticated]
-
-    def update(self, request, *args, **kwargs):
-        cart_id = request.data.get('item')
-        new_quantity = request.data.get('quantity')
-
-        # Validate the item ID
-        if not cart_id:
-            return Response(
-                {"message": "Item ID is required."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        try:
-            cart_item = Cart.objects.get(id=cart_id)
-        except Cart.DoesNotExist:
-            return Response(
-                {"message": f"Cart item with id={cart_id} not found."},
-                status=status.HTTP_404_NOT_FOUND
-            )
-
-        # Validate the new quantity
-        if new_quantity is None or not isinstance(new_quantity, int) or new_quantity <= 0:
-            return Response(
-                {"message": "Invalid quantity. Please provide a positive integer."},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-
-        # Update the quantity
-        cart_item.quantity = new_quantity
-        cart_item.total = calculate_total(cart_item.item.price, new_quantity)  # Update the total
-        cart_item.save()
-
-        # Fetch all cart items again after updating
-        cart_items = Cart.objects.filter(user=request.user)
-        cart_data = [{'cart_id': item.id, 'item': item.item.name, 'quantity': item.quantity, 'total': str(item.total), 'item_id': item.item.id} for item in cart_items]
-        total_price = sum(item.total for item in cart_items)
-
-        return Response(
-            {"message": f"Quantity updated for cart item with id={cart_id}.", "cart": cart_data, "total_price": str(total_price)},
-            status=status.HTTP_200_OK
-        )
 
 
 class AddToCartView(generics.CreateAPIView):
@@ -573,7 +552,7 @@ class AddToCartView(generics.CreateAPIView):
 
         else:
             # Create a new cart item with the extras and kitchen notes associated with the new item only
-            Cart.objects.create(
+            new_cart = Cart.objects.create(
                 user=user,
                 item=item,
                 quantity=quantity,
@@ -585,7 +564,7 @@ class AddToCartView(generics.CreateAPIView):
 
             # Fetch details only for the newly added item
             cart_data = [{
-                'cart_id': existing_cart_item.id if existing_cart_item else None,
+                'cart_id': new_cart.id if new_cart else None,
                 'item': item.name,
                 'quantity': quantity,
                 'total': str(total_price),
@@ -713,3 +692,19 @@ class OrderItemsCreateAPIView(generics.CreateAPIView):
     serializer_class = OrderItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+# Sizes
+class SizeModelViewSet(viewsets.ModelViewSet):
+    serializer_class = SizeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = Sizes.objects.all()
+
+    def get_queryset(self):
+        menu_item = self.kwargs.get('menu_item')
+        if menu_item:
+            queryset = self.queryset.filter(menu_item=menu_item)
+        else:
+            queryset = self.queryset
+        return queryset
