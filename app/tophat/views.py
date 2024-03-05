@@ -25,7 +25,8 @@ from core.models import(
     OrderItems,
     Orders,
     KitchenNotes,
-    Sizes
+    Sizes,
+    OrderNotifications
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -37,7 +38,8 @@ from .serializers import(
     LoyaltyPointsSerializer,
     OrderSerializer,
     OrderItemsSerializer,
-    SizeSerializer
+    SizeSerializer,
+    OrderNotificationsSerializer
 )
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError
@@ -708,3 +710,40 @@ class SizeModelViewSet(viewsets.ModelViewSet):
         else:
             queryset = self.queryset
         return queryset
+
+
+class NotificationUpdateView(generics.UpdateAPIView):
+    serializer_class = OrderNotificationsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    queryset = OrderNotifications.objects.all()
+
+
+class NotificationListView(generics.ListAPIView):
+    serializer_class = OrderNotificationsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        queryset = OrderNotifications.objects.filter(
+            status='pending'
+        )
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        orders_and_items = []
+
+        for notification in queryset:
+            order_id = notification.order_id
+            order = Orders.objects.get(id=order_id)
+            order_items = OrderItems.objects.filter(order_id=order_id)
+
+            order_data = {
+                'order': OrderSerializer(order).data,
+                'order_items': OrderItemsSerializer(order_items, many=True).data
+            }
+
+            orders_and_items.append(order_data)
+
+        return Response(orders_and_items)

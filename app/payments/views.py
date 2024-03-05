@@ -10,7 +10,8 @@ from core.models import(
     Payments,
     Orders,
     OrderItems,
-    Cart
+    Cart,
+    OrderNotifications
 )
 from tophat.serializers import OrderSerializer, OrderItemSerializer
 from django.db import transaction
@@ -159,7 +160,9 @@ class CreatePayment(GenericAPIView):
                         item=cart_item.item,
                         quantity=cart_item.quantity,
                         total=cart_item.total,
-                        size=cart_item.size
+                        size=cart_item.size,
+                        kitchen_notes=cart_item.kitchen_notes,
+                        extras=cart_item.extras
                     )
                     order_items.append(order_item)
 
@@ -188,8 +191,15 @@ class CreatePayment(GenericAPIView):
 
                 payment.save()
 
+                order.payment_status = 'succeeded'
+                order.save()
 
-                # Clear the user's cart
+                notification = OrderNotifications.objects.create(
+                    order=order,
+                    status='pending'
+                )
+                notification.save()
+
                 cart_items.delete()
 
             # Return response

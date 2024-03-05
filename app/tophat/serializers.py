@@ -10,7 +10,8 @@ from core.models import(
     Cart,
     ItemExtras,
     Extras,
-    Sizes
+    Sizes,
+    OrderNotifications
 )
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -222,28 +223,6 @@ class CartSerializer(serializers.ModelSerializer):
         item = next((item for item in cart_items if item.id == obj.id), None)
         return item.item.name if item else ''
 
-    # def to_representation(self, instance):
-    #     data = super().to_representation(instance)
-
-    #     # Convert extras and kitchen_notes strings to lists of integers
-    #     extras = instance.extras
-    #     if extras:
-    #         try:
-    #             data['extras'] = [int(item) for item in extras.strip('[]').split(',')]
-    #         except ValueError:
-    #             data['extras'] = []
-
-    #     kitchen_notes = instance.kitchen_notes
-    #     if kitchen_notes:
-    #         try:
-    #             data['kitchen_notes'] = [int(item) for item in kitchen_notes.strip('[]').split(',')]
-    #         except ValueError:
-    #             data['kitchen_notes'] = []
-
-    #     return data
-
-
-
 
 class CartItemCreateSerializer(serializers.Serializer):
     item_id = serializers.IntegerField(required=True)
@@ -262,3 +241,10 @@ class CartItemCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError("Quantity must be a positive integer.")
 
         return data
+
+
+class OrderNotificationsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderNotifications
+        fields = ['id', 'order', 'status']
+        read_only_fields = ['id', 'order']

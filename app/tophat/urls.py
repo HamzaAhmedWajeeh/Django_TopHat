@@ -47,5 +47,8 @@ urlpatterns = [
 
     path('order/items/create', views.OrderItemsCreateAPIView.as_view(), name='create-order-items'),
 
+    path('notifications/update/<int:id>', views.NotificationUpdateView.as_view(), name='notifications-update'),
+    path('notifications/list', views.NotificationListView.as_view(), name='notifications-list'),
+
     path('', include(router.urls)),
 ]

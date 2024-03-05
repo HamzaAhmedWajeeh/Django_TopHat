@@ -215,6 +215,19 @@ class OrderItems(models.Model):
     total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 
 
+class OrderNotifications(models.Model):
+    order = models.ForeignKey(
+        'Orders', null=True, blank=True, on_delete=models.CASCADE
+        )
+    status = models.CharField(max_length=255, null=True, blank=True)
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
+
+
 class LoyaltyPoints(models.Model):
     user = models.ForeignKey(
         'User', null=True, blank=True, on_delete=models.CASCADE
