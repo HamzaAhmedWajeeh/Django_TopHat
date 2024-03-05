@@ -731,7 +731,7 @@ class SizesListView(generics.ListAPIView):
 
         # Determine the price for each size
         size_data = []
-        for size_field in ['large', 'medium', 'small']:
+        for size_field in ['large', 'medium', 'small'] or ['Large', 'Medium', 'Small']:
             size_name = size_field.capitalize()  # Capitalize the size name
             if getattr(menu_item, size_field, False):
                 price_field = f"{size_field}_price"  # Field name for the price
