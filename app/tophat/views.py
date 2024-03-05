@@ -714,6 +714,8 @@ class SizeModelViewSet(viewsets.ModelViewSet):
 
 class SizesListView(generics.ListAPIView):
     serializer_class = SizeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
@@ -737,17 +739,14 @@ class SizesListView(generics.ListAPIView):
                 size_name = ''
                 if size.large:
                     size_name = 'Large'
-                    price = menu_item.large_price
                 elif size.medium:
                     size_name = 'Medium'
-                    price = menu_item.medium_price
                 elif size.small:
                     size_name = 'Small'
-                    price = menu_item.small_price
 
                 size_data.append({
                     'name': size_name,
-                    'price': price
+                    'price': getattr(menu_item, f'{size_name.lower()}_price', None)
                 })
 
             response_data = {
