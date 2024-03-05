@@ -725,20 +725,21 @@ class SizesListView(generics.ListAPIView):
         queryset = self.get_queryset()
         if queryset.exists():
             menu_item_data = {}
+
+            # Retrieve the corresponding menu item for the sizes
+            menu_item = MenuItems.objects.get(id=queryset.first().menu_item_id)
+
+            # Populate menu_item_data with menu item details
+            menu_item_data = {
+                'name': menu_item.name,
+                'price': menu_item.price
+            }
+
+            # Initialize size_data list
             size_data = []
 
             # Iterate through each size in the queryset
             for size in queryset:
-                # Retrieve the corresponding menu item for the size
-                menu_item = MenuItems.objects.get(id=size.menu_item_id)
-
-                # If menu_item_data is not populated, populate it with menu item details
-                if not menu_item_data:
-                    menu_item_data = {
-                        'name': menu_item.name,
-                        'price': menu_item.price
-                    }
-
                 # Determine the size name
                 size_name = ''
                 if size.large:
