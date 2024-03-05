@@ -723,50 +723,30 @@ class SizesListView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        if queryset.exists():
-            menu_item_data = {}
+        menu_item_id = self.kwargs.get('menu_item_id')
+        try:
+            menu_item = MenuItems.objects.get(id=menu_item_id)
+        except MenuItems.DoesNotExist:
+            return Response({'message': 'Menu item does not exist'}, status=404)
 
-            # Retrieve the corresponding menu item for the sizes
-            menu_item = MenuItems.objects.get(id=queryset.first().menu_item_id)
+        # Determine the price for each size
+        size_data = []
+        for size_field in ['large', 'medium', 'small']:
+            size_name = size_field.capitalize()  # Capitalize the size name
+            if getattr(menu_item, size_field, False):
+                price_field = f"{size_field}_price"  # Field name for the price
+                price = getattr(menu_item, price_field, None)
+                if price is not None:
+                    size_data.append({
+                        'name': size_name,
+                        'price': price
+                    })
 
-            # Populate menu_item_data with menu item details
-            menu_item_data = {
-                'name': menu_item.name,
-                'price': menu_item.price
-            }
-
-            # Initialize size_data list
-            size_data = []
-
-            # Iterate through each size in the queryset
-            for size in queryset:
-                # Determine the size name
-                size_name = ''
-                if size.large:
-                    size_name = 'Large'
-                elif size.medium:
-                    size_name = 'Medium'
-                elif size.small:
-                    size_name = 'Small'
-
-                # Retrieve the price for the size
-                price = getattr(menu_item, f'{size_name.lower()}_price', None)
-
-                # Append size data to size_data list
-                size_data.append({
-                    'name': size_name,
-                    'price': price
-                })
-
-            # Construct the response data
-            response_data = {
-                'menu_item': menu_item_data,
-                'sizes': size_data
-            }
-
-            return Response(response_data)
-        else:
-            return Response({'message': 'No sizes found for the provided menu item'}, status=404)
+        # Construct the response data
+        response_data = {
+            'sizes': size_data
+        }
+        return Response(response_data)
 
 
 class NotificationUpdateView(generics.UpdateAPIView):
