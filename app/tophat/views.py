@@ -722,10 +722,34 @@ class SizesListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if queryset.exists():
-            size_data = SizeSerializer(queryset, many=True).data
             menu_item_id = queryset.first().menu_item_id
             menu_item = MenuItems.objects.get(id=menu_item_id)
-            menu_item_data = MenuItemsSerializer(menu_item).data
+
+            # Retrieve the menu item details
+            menu_item_data = {
+                'name': menu_item.name,
+                'price': menu_item.price
+            }
+
+            # Retrieve the sizes and their corresponding prices
+            size_data = []
+            for size in queryset:
+                size_name = ''
+                if size.large:
+                    size_name = 'Large'
+                    price = menu_item.large_price
+                elif size.medium:
+                    size_name = 'Medium'
+                    price = menu_item.medium_price
+                elif size.small:
+                    size_name = 'Small'
+                    price = menu_item.small_price
+
+                size_data.append({
+                    'name': size_name,
+                    'price': price
+                })
+
             response_data = {
                 'menu_item': menu_item_data,
                 'sizes': size_data
