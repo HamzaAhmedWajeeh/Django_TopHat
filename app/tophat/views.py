@@ -729,18 +729,54 @@ class SizesListView(generics.ListAPIView):
         except MenuItems.DoesNotExist:
             return Response({'message': 'Menu item does not exist'}, status=404)
 
-        # Determine the price for each size
+        # Initialize the list to store size data
         size_data = []
-        for size_field in ['large', 'medium', 'small'] or ['Large', 'Medium', 'Small']:
-            size_name = size_field
-            if getattr(menu_item, size_field, False):
-                price_field = f"{size_field}_price"  # Field name for the price
+
+        # Iterate through each size in the queryset
+        for size_item in queryset:
+            # Determine the size name
+            large = True if size_item.large == True else False
+            size_name = 'Large'
+            price_field = 'large_price'
+            if large == True:
+                print(size_name)
                 price = getattr(menu_item, price_field, None)
                 if price is not None:
                     size_data.append({
                         'name': size_name,
                         'price': price
                     })
+            medium = True if size_item.medium == True else False
+            size_name = 'Medium'
+            price_field = 'medium_price'
+            if medium == True:
+                print(size_name)
+                price = getattr(menu_item, price_field, None)
+                if price is not None:
+                    size_data.append({
+                        'name': size_name,
+                        'price': price
+                    })
+            small = True if size_item.small == True else False
+            size_name = 'Small'
+            price_field = 'small_price'
+            if small == True:
+                print(size_name)
+                price = getattr(menu_item, price_field, None)
+                if price is not None:
+                    size_data.append({
+                        'name': size_name,
+                        'price': price
+                    })
+
+            # If a size name is found, retrieve its price and add it to size_data
+            # if size_name:
+            #     price = getattr(menu_item, price_field, None)
+            #     if price is not None:
+            #         size_data.append({
+            #             'name': size_name,
+            #             'price': price
+            #         })
 
         # Construct the response data
         response_data = {
