@@ -724,18 +724,22 @@ class SizesListView(generics.ListAPIView):
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
         if queryset.exists():
-            menu_item_id = queryset.first().menu_item_id
-            menu_item = MenuItems.objects.get(id=menu_item_id)
-
-            # Retrieve the menu item details
-            menu_item_data = {
-                'name': menu_item.name,
-                'price': menu_item.price
-            }
-
-            # Retrieve the sizes and their corresponding prices
+            menu_item_data = {}
             size_data = []
+
+            # Iterate through each size in the queryset
             for size in queryset:
+                # Retrieve the corresponding menu item for the size
+                menu_item = MenuItems.objects.get(id=size.menu_item_id)
+
+                # If menu_item_data is not populated, populate it with menu item details
+                if not menu_item_data:
+                    menu_item_data = {
+                        'name': menu_item.name,
+                        'price': menu_item.price
+                    }
+
+                # Determine the size name
                 size_name = ''
                 if size.large:
                     size_name = 'Large'
@@ -744,15 +748,21 @@ class SizesListView(generics.ListAPIView):
                 elif size.small:
                     size_name = 'Small'
 
+                # Retrieve the price for the size
+                price = getattr(menu_item, f'{size_name.lower()}_price', None)
+
+                # Append size data to size_data list
                 size_data.append({
                     'name': size_name,
-                    'price': getattr(menu_item, f'{size_name.lower()}_price', None)
+                    'price': price
                 })
 
+            # Construct the response data
             response_data = {
                 'menu_item': menu_item_data,
                 'sizes': size_data
             }
+
             return Response(response_data)
         else:
             return Response({'message': 'No sizes found for the provided menu item'}, status=404)
