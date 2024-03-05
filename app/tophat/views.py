@@ -706,10 +706,33 @@ class SizeModelViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         menu_item = self.kwargs.get('menu_item')
         if menu_item:
-            queryset = self.queryset.filter(menu_item_id=menu_item).all()
+            queryset = self.queryset.filter(menu_item_id=menu_item)
         else:
             queryset = self.queryset
         return queryset
+
+
+class SizesListView(generics.ListAPIView):
+    serializer_class = SizeSerializer
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        return Sizes.objects.filter(menu_item_id=menu_item_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        if queryset.exists():
+            size_data = SizeSerializer(queryset, many=True).data
+            menu_item_id = queryset.first().menu_item_id
+            menu_item = MenuItems.objects.get(id=menu_item_id)
+            menu_item_data = MenuItemsSerializer(menu_item).data
+            response_data = {
+                'menu_item': menu_item_data,
+                'sizes': size_data
+            }
+            return Response(response_data)
+        else:
+            return Response({'message': 'No sizes found for the provided menu item'}, status=404)
 
 
 class NotificationUpdateView(generics.UpdateAPIView):

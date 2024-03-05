@@ -50,5 +50,7 @@ urlpatterns = [
     path('notifications/update/<int:id>', views.NotificationUpdateView.as_view(), name='notifications-update'),
     path('notifications/list', views.NotificationListView.as_view(), name='notifications-list'),
 
+    path('sizes/list/<int:menu_item_id>', views.SizesListView.as_view(), name='sizes-list'),
+
     path('', include(router.urls)),
 ]
