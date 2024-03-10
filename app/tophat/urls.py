@@ -5,6 +5,7 @@ from tophat import views
 router = DefaultRouter()
 
 router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
+router.register('kitchen', viewset=views.KitchenNoteModelViewSet, basename='kitchen')
 
 
 app_name = 'tophat'
@@ -51,6 +52,8 @@ urlpatterns = [
     path('notifications/list', views.NotificationListView.as_view(), name='notifications-list'),
 
     path('sizes/list/<int:menu_item_id>', views.SizesListView.as_view(), name='sizes-list'),
+
+    path('kitchen/list/<int:menu_item_id>', views.KitchenNoteListView.as_view(), name='kitchen-list'),
 
     path('', include(router.urls)),
 ]

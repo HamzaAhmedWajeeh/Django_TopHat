@@ -11,7 +11,8 @@ from core.models import(
     ItemExtras,
     Extras,
     Sizes,
-    OrderNotifications
+    OrderNotifications,
+    KitchenNotes
 )
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
@@ -180,6 +181,18 @@ class OrderItemsSerializer(serializers.Serializer):
 class ExtrasSerializer(serializers.ModelSerializer):
     class Meta:
         model = Extras
+        fields = [
+            'id', 'menu_item', 'name', 'price'
+            ]
+        read_only_fields = [
+            'creation_date', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date', 'id'
+            ]
+
+
+class KitchenNoteSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = KitchenNotes
         fields = [
             'id', 'menu_item', 'name', 'price'
             ]

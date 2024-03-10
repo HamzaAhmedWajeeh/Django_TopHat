@@ -39,7 +39,8 @@ from .serializers import(
     OrderSerializer,
     OrderItemsSerializer,
     SizeSerializer,
-    OrderNotificationsSerializer
+    OrderNotificationsSerializer,
+    KitchenNoteSerializer
 )
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError
@@ -783,6 +784,37 @@ class SizesListView(generics.ListAPIView):
             'sizes': size_data
         }
         return Response(response_data)
+
+
+# Kitchen Notes
+class KitchenNoteModelViewSet(viewsets.ModelViewSet):
+    serializer_class = KitchenNoteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+    queryset = KitchenNotes.objects.all()
+
+    def get_queryset(self):
+        menu_item = self.kwargs.get('menu_item_id')
+        if menu_item:
+            queryset = self.queryset.filter(menu_item_id=menu_item)
+        else:
+            queryset = self.queryset
+        return queryset
+
+
+class KitchenNoteListView(generics.ListAPIView):
+    serializer_class = KitchenNoteSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        return KitchenNotes.objects.filter(menu_item_id=menu_item_id)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.serializer_class(queryset, many=True)
+        return Response(serializer.data)
 
 
 class NotificationUpdateView(generics.UpdateAPIView):

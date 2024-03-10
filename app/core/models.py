@@ -67,9 +67,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 class Categories(models.Model):
     name = models.CharField(max_length=255, null=True)
     # Who Columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -83,9 +83,9 @@ class Feedback(models.Model):
         )
     message = models.CharField(max_length=450, null=True, blank=True)
     # Who Columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -120,9 +120,9 @@ class ItemExtras(models.Model):
         )
 
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -134,9 +134,9 @@ class KitchenNotes(models.Model):
     name = models.CharField(max_length=300, null=True, blank=True)
     price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -149,9 +149,9 @@ class Extras(models.Model):
     price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -167,9 +167,9 @@ class Payments(models.Model):
     payment_intent_id = models.CharField(max_length=500)
 
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -194,9 +194,9 @@ class Sizes(models.Model):
     medium = models.BooleanField(default=False, null=True, blank=True)
     small = models.BooleanField(default=False, null=True, blank=True)
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
-    last_update_date = models.DateTimeField(auto_now_add=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
     last_update_login = models.IntegerField(null=True, blank=True)
 
@@ -221,7 +221,7 @@ class OrderNotifications(models.Model):
         )
     status = models.CharField(max_length=255, null=True, blank=True)
     # who columns
-    creation_date = models.DateTimeField(auto_now=True)
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
     created_by = models.IntegerField(null=True, blank=True)
     last_update_date = models.DateTimeField(auto_now=True)
     last_updated_by = models.IntegerField(null=True, blank=True)
