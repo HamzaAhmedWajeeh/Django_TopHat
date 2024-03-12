@@ -128,10 +128,21 @@ class OrderSerializer(serializers.ModelSerializer):
         fields = ['amount', 'order_status', 'payment_status', 'items', 'order_date', 'order_time']
 
 
+class NewOrderSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Orders
+        fields = ['amount', 'order_status', 'payment_status', 'order_date', 'order_time', 'date', 'user']
+        read_only_fields = [
+            'user'
+            ]
+
+
 class OrderItemsSerializer(serializers.Serializer):
     """Serializer for Order Items Object"""
 
     user = 'user.serializers.UserSerializer'
+    user_name = serializers.CharField(source='order.user.name', read_only=True)
+    user_email = serializers.EmailField(source='order.user.email', read_only=True)
 
     user_id = serializers.IntegerField(required=False)
     order_id = serializers.IntegerField(required=False)
@@ -171,9 +182,9 @@ class OrderItemsSerializer(serializers.Serializer):
     def to_representation(self, instance):
         """Include orderItems_id in the serialized representation"""
         representation = super().to_representation(instance)
-        representation['order_id'] = instance.id
-        representation['extras'] = instance.platform.split(",")
-        representation['kitchen_notes'] = instance.keywords.split(",")
+        representation['order_id'] = instance.order.id
+        representation['extras'] = instance.extras.split(",") if instance.extras else None
+        representation['kitchen_notes'] = instance.kitchen_notes.split(",") if instance.kitchen_notes else None
 
         return representation
 

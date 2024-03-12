@@ -40,7 +40,8 @@ from .serializers import(
     OrderItemsSerializer,
     SizeSerializer,
     OrderNotificationsSerializer,
-    KitchenNoteSerializer
+    KitchenNoteSerializer,
+    NewOrderSerializer
 )
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError
@@ -840,12 +841,13 @@ class NotificationListView(generics.ListAPIView):
         orders_and_items = []
 
         for notification in queryset:
-            order_id = notification.order_id
+            order_id = notification.order_id  # Access order_id instead of the order object
             order = Orders.objects.get(id=order_id)
-            order_items = OrderItems.objects.filter(order_id=order_id)
+            order_items = OrderItems.objects.filter(order=order_id)
 
             order_data = {
-                'order': OrderSerializer(order).data,
+                'notification': OrderNotificationsSerializer(notification).data,
+                'order': NewOrderSerializer(order).data,
                 'order_items': OrderItemsSerializer(order_items, many=True).data
             }
 
