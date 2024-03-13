@@ -26,7 +26,8 @@ from core.models import(
     Orders,
     KitchenNotes,
     Sizes,
-    OrderNotifications
+    OrderNotifications,
+    User
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -852,10 +853,18 @@ class NotificationListView(generics.ListAPIView):
             order_id = notification.order_id
             order = Orders.objects.get(id=order_id)
             order_items = OrderItems.objects.filter(order=order_id)
+            user = User.objects.get(pk=order.user_id)
 
             order_data = {
                 'notification': OrderNotificationsSerializer(notification).data,
                 'order': NewOrderSerializer(order).data,
+                'user': {
+                    'id': user.id,
+                    'username': user.name,
+                    'email': user.email,
+                    'address': user.address,
+                    'phone': user.phone
+                },
                 'order_items': [],
             }
 
