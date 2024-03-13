@@ -823,6 +823,16 @@ class NotificationUpdateView(generics.UpdateAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
     queryset = OrderNotifications.objects.all()
+    lookup_field = 'id'
+
+    def perform_update(self, serializer):
+        instance = serializer.save()
+        if 'status' in serializer.validated_data:
+            new_status = serializer.validated_data['status']
+            order_notification = instance
+            order = order_notification.order
+            order.order_status = new_status
+            order.save()
 
 
 class NotificationListView(generics.ListAPIView):
@@ -831,9 +841,7 @@ class NotificationListView(generics.ListAPIView):
     permission_classes = [IsAuthenticated, IsAdminUser]
 
     def get_queryset(self):
-        queryset = OrderNotifications.objects.filter(
-            status='pending'
-        )
+        queryset = OrderNotifications.objects.all()
         return queryset
 
     def list(self, request, *args, **kwargs):
@@ -841,7 +849,7 @@ class NotificationListView(generics.ListAPIView):
         orders_and_items = []
 
         for notification in queryset:
-            order_id = notification.order_id  # Access order_id instead of the order object
+            order_id = notification.order_id
             order = Orders.objects.get(id=order_id)
             order_items = OrderItems.objects.filter(order=order_id)
 
