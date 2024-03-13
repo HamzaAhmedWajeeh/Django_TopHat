@@ -147,9 +147,9 @@ class OrderItemsSerializer(serializers.Serializer):
     user_id = serializers.IntegerField(required=False)
     order_id = serializers.IntegerField(required=False)
     item_id = serializers.IntegerField(required=False)
-    size_id = serializers.IntegerField(required=False)
-    extras = serializers.ListField()
-    kitchen_notes = serializers.ListField()
+    size = serializers.CharField(required=False)
+    extras = serializers.ListField(required=False)
+    kitchen_notes = serializers.ListField(required=False)
     quantity = serializers.IntegerField(required=False)
     total = serializers.IntegerField(required=False)
 
@@ -157,7 +157,7 @@ class OrderItemsSerializer(serializers.Serializer):
         """Create and return a Order Items instance"""
         order_id = validated_data.pop('order_id', None)
         item_id = validated_data.pop('item_id', None)
-        size_id = validated_data.pop('size_id', None)
+        size = validated_data.pop('size', None)
         quantity = validated_data.pop('quantity', None)
         extras = validated_data.pop('extras', [])
         kitchen_notes = validated_data.pop('kitchen_notes', [])
@@ -165,11 +165,14 @@ class OrderItemsSerializer(serializers.Serializer):
 
         extras = ",".join(extras)
         kitchen_notes = ",".join(kitchen_notes)
+        
+        order_instance = Orders.objects.get(id=order_id)
+        item_instance = MenuItems.objects.get(id=item_id)
 
         orderItems = OrderItems.objects.create(
-            order=order_id,
-            item=item_id,
-            size=size_id,
+            order=order_instance,
+            item=item_instance,
+            size=size,
             extras=extras,
             kitchen_notes=kitchen_notes,
             quantity=quantity,

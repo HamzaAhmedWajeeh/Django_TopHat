@@ -856,8 +856,36 @@ class NotificationListView(generics.ListAPIView):
             order_data = {
                 'notification': OrderNotificationsSerializer(notification).data,
                 'order': NewOrderSerializer(order).data,
-                'order_items': OrderItemsSerializer(order_items, many=True).data
+                'order_items': [],
             }
+
+            for order_item in order_items:
+                menu_item = MenuItems.objects.get(pk=order_item.item_id)
+
+                # Retrieve Extras instances
+                extras_list = []
+                for extra_id in order_item.extras.split(",") if order_item.extras else []:
+                    extra = Extras.objects.get(pk=int(extra_id))
+                    extras_list.append({'name': extra.name, 'price': extra.price})
+
+                # Retrieve KitchenNotes instances
+                kitchen_notes_list = []
+                for kitchen_note_id in order_item.kitchen_notes.split(",") if order_item.kitchen_notes else []:
+                    kitchen_note = KitchenNotes.objects.get(pk=int(kitchen_note_id))
+                    kitchen_notes_list.append({'name': kitchen_note.name})
+
+
+                item_data = {
+                    'item': {
+                        'name': menu_item.name,
+                        'description': menu_item.description
+                    },
+                    'extras': extras_list,
+                    'kitchen_notes': kitchen_notes_list,
+                    'quantity': order_item.quantity,
+                    'total': order_item.total
+                }
+                order_data['order_items'].append(item_data)
 
             orders_and_items.append(order_data)
 
