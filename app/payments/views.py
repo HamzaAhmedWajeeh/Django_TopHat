@@ -148,7 +148,7 @@ class CreatePayment(GenericAPIView):
                     order_date=data.get('order_date'),
                     order_time=data.get('order_time'),
                     amount=total_amount,
-                    order_status='incomplete',
+                    order_status='pending',
                     payment_status='pending'
                 )
 
