@@ -892,7 +892,8 @@ class NotificationListView(generics.ListAPIView):
                     'extras': extras_list,
                     'kitchen_notes': kitchen_notes_list,
                     'quantity': order_item.quantity,
-                    'total': order_item.total
+                    'total': order_item.total,
+                    'size': order_item.size
                 }
                 order_data['order_items'].append(item_data)
 
