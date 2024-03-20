@@ -789,7 +789,7 @@ class SizeDeleteUpdateView(generics.RetrieveUpdateDestroyAPIView):
 
     def get_object(self):
         queryset = self.get_queryset()
-        obj = generics.get_object_or_404(queryset, pk=self.kwargs.get('pk'))
+        obj = generics.get_object_or_404(queryset, pk=self.kwargs.get('menu_item_id'))
         self.check_object_permissions(self.request, obj)
         return obj
 
