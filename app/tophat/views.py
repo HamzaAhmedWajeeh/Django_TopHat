@@ -772,22 +772,28 @@ class SizesListView(generics.ListAPIView):
                         'price': price
                     })
 
-            # If a size name is found, retrieve its price and add it to size_data
-            # if size_name:
-            #     price = getattr(menu_item, price_field, None)
-            #     if price is not None:
-            #         size_data.append({
-            #             'name': size_name,
-            #             'price': price
-            #         })
-
-        # Construct the response data
         response_data = {
             'sizes': size_data
         }
         return Response(response_data)
 
 
+class SizeDeleteUpdateView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = SizeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        return Sizes.objects.filter(menu_item_id=menu_item_id)
+
+    def get_object(self):
+        queryset = self.get_queryset()
+        obj = generics.get_object_or_404(queryset, pk=self.kwargs.get('pk'))
+        self.check_object_permissions(self.request, obj)
+        return obj
+
+    
 # Kitchen Notes
 class KitchenNoteModelViewSet(viewsets.ModelViewSet):
     serializer_class = KitchenNoteSerializer
