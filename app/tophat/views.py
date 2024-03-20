@@ -782,6 +782,7 @@ class SizeUpdateView(generics.UpdateAPIView):
     serializer_class = SizeSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
+    lookup_field = 'menu_item_id'
 
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
