@@ -778,7 +778,7 @@ class SizesListView(generics.ListAPIView):
         return Response(response_data)
 
 
-class SizeDeleteUpdateView(generics.RetrieveUpdateDestroyAPIView):
+class SizeUpdateView(generics.UpdateAPIView):
     serializer_class = SizeSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
@@ -786,14 +786,8 @@ class SizeDeleteUpdateView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
         return Sizes.objects.filter(menu_item_id=menu_item_id)
-
-    def get_object(self):
-        queryset = self.get_queryset()
-        obj = generics.get_object_or_404(queryset, pk=self.kwargs.get('menu_item_id'))
-        self.check_object_permissions(self.request, obj)
-        return obj
-
     
+
 # Kitchen Notes
 class KitchenNoteModelViewSet(viewsets.ModelViewSet):
     serializer_class = KitchenNoteSerializer
