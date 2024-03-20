@@ -787,7 +787,18 @@ class SizeUpdateView(generics.UpdateAPIView):
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
         return Sizes.objects.filter(menu_item=menu_item_id)
-    
+
+
+class SizeDeleteView(generics.DestroyAPIView):
+    serializer_class = SizeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    lookup_field = 'menu_item_id'
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        return Sizes.objects.filter(menu_item=menu_item_id)
+
 
 # Kitchen Notes
 class KitchenNoteModelViewSet(viewsets.ModelViewSet):
