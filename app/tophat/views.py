@@ -785,7 +785,7 @@ class SizeUpdateView(generics.UpdateAPIView):
 
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
-        return Sizes.objects.filter(menu_item_id=menu_item_id)
+        return Sizes.objects.filter(menu_item=menu_item_id)
     
 
 # Kitchen Notes
