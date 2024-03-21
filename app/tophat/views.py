@@ -53,7 +53,7 @@ class CategoriesListAPIView(generics.ListAPIView):
     serializer_class = CategoriesSerializer
     queryset = Categories.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Categories.objects.all().order_by('-creation_date')
@@ -156,16 +156,16 @@ class FeedbackDeleteAPIView(generics.DestroyAPIView):
 # Menu Items START
 class MenuItemsListAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
-    queryset = MenuItems.objects.all()
+    queryset = MenuItems.objects.all().order_by('-creation_date')
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class MenuItemsRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = MenuItemsSerializer
     queryset = MenuItems.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class MenuItemsUpdateAPIView(generics.UpdateAPIView):
@@ -194,7 +194,7 @@ class MenuItemsCreateAPIView(generics.CreateAPIView):
 class MenuItemsListByCategoryAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         category = self.kwargs.get('category_id')
@@ -787,17 +787,6 @@ class SizeUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
     def get_queryset(self):
         menu_item_id = self.kwargs.get('menu_item_id')
         return Sizes.objects.filter(menu_item=menu_item_id)
-
-
-# class SizeDeleteView(generics.DestroyAPIView):
-#     serializer_class = SizeSerializer
-#     authentication_classes = [authentication.TokenAuthentication]
-#     permission_classes = [IsAuthenticated, IsAdminUser]
-#     lookup_field = 'menu_item_id'
-
-#     def get_queryset(self):
-#         menu_item_id = self.kwargs.get('menu_item_id')
-#         return Sizes.objects.filter(menu_item=menu_item_id)
 
 
 # Kitchen Notes

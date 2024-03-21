@@ -66,11 +66,12 @@ class MenuItemsSerializer(serializers.ModelSerializer):
         model = MenuItems
         fields = [
             'id', 'name', 'description', 'price', 'category', 'large_price', 'medium_price', 'small_price',
-            'image', 'image1', 'image2', 'image3', 'image4', 'image5'
+            'image', 'image1', 'image2', 'image3', 'image4', 'image5', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date', 'creation_date'
         ]
 
         read_only_fields = [
-            'id'
+            'id', 'creation_date', 'created_by'
         ]
 
 

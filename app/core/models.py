@@ -109,6 +109,12 @@ class MenuItems(models.Model):
     image3 = models.ImageField(null=True, blank=True)
     image4 = models.ImageField(null=True, blank=True)
     image5 = models.ImageField(null=True, blank=True)
+    # who columns
+    creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
+    created_by = models.IntegerField(null=True, blank=True)
+    last_update_date = models.DateTimeField(auto_now=True, null=True, blank=True)
+    last_updated_by = models.IntegerField(null=True, blank=True)
+    last_update_login = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
         return self.name
