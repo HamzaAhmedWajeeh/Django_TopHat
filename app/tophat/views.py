@@ -156,7 +156,7 @@ class FeedbackDeleteAPIView(generics.DestroyAPIView):
 # Menu Items START
 class MenuItemsListAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
-    queryset = MenuItems.objects.all().order_by('-creation_date')
+    queryset = MenuItems.objects.all().order_by('-id')
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
