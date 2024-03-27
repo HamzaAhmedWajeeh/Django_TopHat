@@ -53,7 +53,7 @@ class CategoriesListAPIView(generics.ListAPIView):
     serializer_class = CategoriesSerializer
     queryset = Categories.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         return Categories.objects.all().order_by('-creation_date')
@@ -156,16 +156,16 @@ class FeedbackDeleteAPIView(generics.DestroyAPIView):
 # Menu Items START
 class MenuItemsListAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
-    queryset = MenuItems.objects.all()
+    queryset = MenuItems.objects.all().order_by('-id')
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class MenuItemsRetrieveAPIView(generics.RetrieveAPIView):
     serializer_class = MenuItemsSerializer
     queryset = MenuItems.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class MenuItemsUpdateAPIView(generics.UpdateAPIView):
@@ -194,7 +194,7 @@ class MenuItemsCreateAPIView(generics.CreateAPIView):
 class MenuItemsListByCategoryAPIView(generics.ListAPIView):
     serializer_class = MenuItemsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         category = self.kwargs.get('category_id')
@@ -772,20 +772,21 @@ class SizesListView(generics.ListAPIView):
                         'price': price
                     })
 
-            # If a size name is found, retrieve its price and add it to size_data
-            # if size_name:
-            #     price = getattr(menu_item, price_field, None)
-            #     if price is not None:
-            #         size_data.append({
-            #             'name': size_name,
-            #             'price': price
-            #         })
-
-        # Construct the response data
         response_data = {
             'sizes': size_data
         }
         return Response(response_data)
+
+
+class SizeUpdateDeleteView(generics.RetrieveUpdateDestroyAPIView):
+    serializer_class = SizeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+    lookup_field = 'menu_item_id'
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        return Sizes.objects.filter(menu_item=menu_item_id)
 
 
 # Kitchen Notes
@@ -892,7 +893,8 @@ class NotificationListView(generics.ListAPIView):
                     'extras': extras_list,
                     'kitchen_notes': kitchen_notes_list,
                     'quantity': order_item.quantity,
-                    'total': order_item.total
+                    'total': order_item.total,
+                    'size': order_item.size
                 }
                 order_data['order_items'].append(item_data)
 
