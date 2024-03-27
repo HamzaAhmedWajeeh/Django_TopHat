@@ -11,10 +11,12 @@ from core.models import(
     Orders,
     OrderItems,
     Cart,
-    OrderNotifications
+    OrderNotifications,
+    LoyaltyPoints
 )
-from tophat.serializers import OrderSerializer, OrderItemSerializer
+from tophat.serializers import OrderSerializer, OrderItemSerializer, LoyaltyPointsSerializer
 from django.db import transaction
+from tophat.functions import calculateLoyaltyPoints
 
 # class CreatePayment(GenericAPIView):
 #     permission_classes = [IsAuthenticated]
@@ -200,6 +202,14 @@ class CreatePayment(GenericAPIView):
                 )
                 notification.save()
 
+                loyalty_points = calculateLoyaltyPoints(total_amount)
+
+                loyalty_points_instance = LoyaltyPoints.objects.create(
+                    user=user,
+                    points=+loyalty_points
+                )
+                loyalty_points_instance.save()
+
                 cart_items.delete()
 
             # Return response
@@ -207,7 +217,8 @@ class CreatePayment(GenericAPIView):
                 'message': 'Order Confirmed',
                 'data': {
                     'order_details': OrderSerializer(order).data,
-                    'order_items': OrderItemSerializer(order_items, many=True).data
+                    'order_items': OrderItemSerializer(order_items, many=True).data,
+                    'loyalty_points': LoyaltyPoints.objects.get(user=user).first()
                 }
             }, status=status.HTTP_200_OK)
 

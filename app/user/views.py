@@ -193,7 +193,7 @@ class UserResetPassword(APIView):
             token = encrypt_email(email=email,
                                   key=settings.ENCRYPTION_KEY.encode('utf-8'))
 
-            password_reset_link = f"https://app.smmart.ai/#/resetPassword?token={token.decode()}"
+            password_reset_link = f"http://localhost:4200/update?token={token.decode()}"
 
             subject = "Reset Password!"
             html_message = render_to_string(
