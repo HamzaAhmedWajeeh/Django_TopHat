@@ -218,7 +218,7 @@ class CreatePayment(GenericAPIView):
                 'data': {
                     'order_details': OrderSerializer(order).data,
                     'order_items': OrderItemSerializer(order_items, many=True).data,
-                    'loyalty_points': LoyaltyPoints.objects.get(user=user).first()
+                    'loyalty_points': loyalty_points_instance.points,
                 }
             }, status=status.HTTP_200_OK)
 
