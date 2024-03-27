@@ -1,118 +1,14 @@
-import os
+import stripe
+from django.conf import settings
+from django.db import transaction
 from rest_framework import status
 from rest_framework.generics import GenericAPIView
-from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from django.conf import settings
-import stripe
-from core.models import(
-    Payments,
-    Orders,
-    OrderItems,
-    Cart,
-    OrderNotifications,
-    LoyaltyPoints
-)
-from tophat.serializers import OrderSerializer, OrderItemSerializer, LoyaltyPointsSerializer
-from django.db import transaction
+from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
+from tophat.serializers import OrderSerializer, OrderItemSerializer
 from tophat.functions import calculateLoyaltyPoints
-
-# class CreatePayment(GenericAPIView):
-#     permission_classes = [IsAuthenticated]
-#     authentication_classes = [TokenAuthentication]
-#     serializer_class = OrderSerializer
-
-#     def post(self, request):
-#         order_serializer = self.get_serializer(data=request.data)
-#         if not order_serializer.is_valid():
-#             return Response(
-#                 {'message': order_serializer.errors},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-#         order_data = order_serializer.validated_data
-#         user = self.request.user
-#         stripe.api_key = settings.STRIPE_SECRET_KEY
-#         # data = request.data
-#         # print(data)
-#         # payment_method_id = data['payment_method_id']
-#         items_data = order_data.get('items', [])
-#         print(items_data)
-
-#         total_amount = sum(item['quantity'] * item['item'].price for item in items_data)
-#         print(total_amount)
-
-#         try:
-#             with transaction.atomic():
-#                 # Try to retrieve the customer, create if not exists
-#                 customer_data = stripe.Customer.list(email=user.email).data
-#                 if len(customer_data) == 0:
-#                     customer = stripe.Customer.create(
-#                         name=user.name,
-#                         email=user.email,
-#                     )
-#                 else:
-#                     customer = customer_data[0]
-
-#                 payment_intent = stripe.PaymentIntent.create(
-#                     customer=customer.id,
-#                     currency='aud',
-#                     amount=int(total_amount * 100),
-#                     confirm=True,
-#                     return_url="http://localhost:9001/",
-#                     receipt_email=user.email
-#                 )
-
-#                 order = Orders.objects.create(
-#                     user=user,
-#                     amount=total_amount,
-#                     order_status='Pending',
-#                     payment_status='Unpaid'
-#                 )
-
-#                 for item_data in items_data:
-#                     item = item_data['item']
-#                     quantity = item_data['quantity']
-#                     total = item['price'] * quantity
-#                     OrderItems.objects.create(
-#                         order=order,
-#                         item=item,
-#                         quantity=quantity,
-#                         total=total
-#                     )
-
-#                 payment = Payments.objects.create(
-#                     order=order,
-#                     user=user,
-#                     succeeded=payment_intent.status == 'succeeded',
-#                     payment_intent_id=payment_intent.id
-#                 )
-
-#                 return Response(
-#                     status=status.HTTP_200_OK,
-#                     data={
-#                         'message': 'Success',
-#                         'data': {'customer_id': customer.id},
-#                         'payment': {
-#                             'id': payment.id,
-#                             'organization': user.organization.name
-#                         }
-#                     }
-#                 )
-#         except stripe.error.CardError as e:
-#             message = str(e)
-#             if ":" in message:
-#                 message = message.split(": ")[1]
-#             return Response(
-#                 {'message': message},
-#                 status=status.HTTP_400_BAD_REQUEST
-#             )
-#         except Exception as e:
-#             # Handle other exceptions (e.g., network issues, API errors) here
-#             return Response(
-#                 {'message': f"Error processing payment: {str(e)}"},
-#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
-#             )
 
 
 class CreatePayment(GenericAPIView):
@@ -122,39 +18,33 @@ class CreatePayment(GenericAPIView):
 
     def post(self, request):
         user = self.request.user
-        data = request.data
+        request_data = request.data
         stripe.api_key = settings.STRIPE_SECRET_KEY
 
         try:
             with transaction.atomic():
-                # Fetch all cart items for the user
                 cart_items = Cart.objects.filter(user=user)
-
-                # Calculate total amount from cart items
                 total_amount = sum(cart_item.total for cart_item in cart_items)
 
-                # Retrieve or create Stripe customer
                 customer = stripe.Customer.list(email=user.email).data
                 if not customer:
                     customer = stripe.Customer.create(
                         name=user.name,
                         email=user.email,
-                        payment_method=data['payment_method_id']
+                        payment_method=request_data['payment_method_id']
                     )
                 else:
                     customer = customer[0]
 
-                # Create order
                 order = Orders.objects.create(
                     user=user,
-                    order_date=data.get('order_date'),
-                    order_time=data.get('order_time'),
+                    order_date=request_data.get('order_date'),
+                    order_time=request_data.get('order_time'),
                     amount=total_amount,
                     order_status='pending',
                     payment_status='pending'
                 )
 
-                # Save order items
                 order_items = []
                 for cart_item in cart_items:
                     order_item = OrderItems.objects.create(
@@ -168,11 +58,9 @@ class CreatePayment(GenericAPIView):
                     )
                     order_items.append(order_item)
 
-
-                # Create payment intent
                 payment_intent = stripe.PaymentIntent.create(
                     customer=customer,
-                    payment_method=data['payment_method_id'],
+                    payment_method=request_data['payment_method_id'],
                     currency='aud',
                     amount=int(total_amount * 100),
                     confirm=True,
@@ -180,7 +68,6 @@ class CreatePayment(GenericAPIView):
                     receipt_email=user.email
                 )
 
-                # Save payment details
                 payment = Payments.objects.create(
                     payment_intent_id=payment_intent.id,
                     succeeded=payment_intent.status == 'succeeded',
@@ -191,8 +78,6 @@ class CreatePayment(GenericAPIView):
                     last_update_login=user,
                 )
 
-                payment.save()
-
                 order.payment_status = 'succeeded'
                 order.save()
 
@@ -200,19 +85,16 @@ class CreatePayment(GenericAPIView):
                     order=order,
                     status='pending'
                 )
-                notification.save()
 
                 loyalty_points = calculateLoyaltyPoints(total_amount)
 
                 loyalty_points_instance = LoyaltyPoints.objects.create(
                     user=user,
-                    points=+loyalty_points
+                    points=loyalty_points
                 )
-                loyalty_points_instance.save()
 
                 cart_items.delete()
 
-            # Return response
             return Response({
                 'message': 'Order Confirmed',
                 'data': {
@@ -224,10 +106,11 @@ class CreatePayment(GenericAPIView):
 
         except stripe.error.CardError as e:
             message = str(e)
-            print(message)
             if ":" in message:
                 message = message.split(": ")[1]
             return Response({'message': message}, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as e:
+            return Response({'message': f"Error processing payment: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
 
 
@@ -345,3 +228,103 @@ class CreatePayment(GenericAPIView):
 #                 {'message': message},
 #                 status=status.HTTP_400_BAD_REQUEST
 #                 )
+
+
+
+
+
+# class CreatePayment(GenericAPIView):
+#     permission_classes = [IsAuthenticated]
+#     authentication_classes = [TokenAuthentication]
+#     serializer_class = OrderSerializer
+
+#     def post(self, request):
+#         order_serializer = self.get_serializer(data=request.data)
+#         if not order_serializer.is_valid():
+#             return Response(
+#                 {'message': order_serializer.errors},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#         order_data = order_serializer.validated_data
+#         user = self.request.user
+#         stripe.api_key = settings.STRIPE_SECRET_KEY
+#         # data = request.data
+#         # print(data)
+#         # payment_method_id = data['payment_method_id']
+#         items_data = order_data.get('items', [])
+#         print(items_data)
+
+#         total_amount = sum(item['quantity'] * item['item'].price for item in items_data)
+#         print(total_amount)
+
+#         try:
+#             with transaction.atomic():
+#                 # Try to retrieve the customer, create if not exists
+#                 customer_data = stripe.Customer.list(email=user.email).data
+#                 if len(customer_data) == 0:
+#                     customer = stripe.Customer.create(
+#                         name=user.name,
+#                         email=user.email,
+#                     )
+#                 else:
+#                     customer = customer_data[0]
+
+#                 payment_intent = stripe.PaymentIntent.create(
+#                     customer=customer.id,
+#                     currency='aud',
+#                     amount=int(total_amount * 100),
+#                     confirm=True,
+#                     return_url="http://localhost:9001/",
+#                     receipt_email=user.email
+#                 )
+
+#                 order = Orders.objects.create(
+#                     user=user,
+#                     amount=total_amount,
+#                     order_status='Pending',
+#                     payment_status='Unpaid'
+#                 )
+
+#                 for item_data in items_data:
+#                     item = item_data['item']
+#                     quantity = item_data['quantity']
+#                     total = item['price'] * quantity
+#                     OrderItems.objects.create(
+#                         order=order,
+#                         item=item,
+#                         quantity=quantity,
+#                         total=total
+#                     )
+
+#                 payment = Payments.objects.create(
+#                     order=order,
+#                     user=user,
+#                     succeeded=payment_intent.status == 'succeeded',
+#                     payment_intent_id=payment_intent.id
+#                 )
+
+#                 return Response(
+#                     status=status.HTTP_200_OK,
+#                     data={
+#                         'message': 'Success',
+#                         'data': {'customer_id': customer.id},
+#                         'payment': {
+#                             'id': payment.id,
+#                             'organization': user.organization.name
+#                         }
+#                     }
+#                 )
+#         except stripe.error.CardError as e:
+#             message = str(e)
+#             if ":" in message:
+#                 message = message.split(": ")[1]
+#             return Response(
+#                 {'message': message},
+#                 status=status.HTTP_400_BAD_REQUEST
+#             )
+#         except Exception as e:
+#             # Handle other exceptions (e.g., network issues, API errors) here
+#             return Response(
+#                 {'message': f"Error processing payment: {str(e)}"},
+#                 status=status.HTTP_500_INTERNAL_SERVER_ERROR
+#             )
