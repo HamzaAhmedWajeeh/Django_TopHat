@@ -166,7 +166,7 @@ class OrderItemsSerializer(serializers.Serializer):
 
         extras = ",".join(extras)
         kitchen_notes = ",".join(kitchen_notes)
-        
+
         order_instance = Orders.objects.get(id=order_id)
         item_instance = MenuItems.objects.get(id=item_id)
 

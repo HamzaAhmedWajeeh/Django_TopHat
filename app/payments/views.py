@@ -8,13 +8,14 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
 from tophat.serializers import OrderSerializer, OrderItemSerializer
+from .serializers import PaymentSerializer
 from tophat.functions import calculateLoyaltyPoints
 
 
 class CreatePayment(GenericAPIView):
     permission_classes = [IsAuthenticated]
     authentication_classes = [TokenAuthentication]
-    serializer_class = OrderSerializer
+    serializer_class = PaymentSerializer
 
     def post(self, request):
         user = self.request.user
