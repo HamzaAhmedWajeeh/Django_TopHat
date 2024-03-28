@@ -126,11 +126,10 @@ class PaymentIntent(GenericAPIView):
 
         cart_items = Cart.objects.filter(user=user)
         total_amount = sum(cart_item.total for cart_item in cart_items)
-        total_returned_amount = request_data.get('amount', total_amount)
 
+        total_returned_amount = request_data.get('amount', total_amount)
         total_returned_amount_float = float(total_returned_amount)
         total_returned_amount_integer = int(total_returned_amount_float * 100)
-        print((total_returned_amount_integer) * 100)
 
         customer = stripe.Customer.list(email=user.email).data
         if not customer:
@@ -160,10 +159,7 @@ class PaymentIntent(GenericAPIView):
                 'customerEmail': customer.email,
                 'customerName': customer.name,
                 'ephemeralKey': ephemeralKey.secret,
-                'paymentIntentObject': {
-                    'paymentIntentID': payment_intent.id,
-                    'paymentIntentStatus': payment_intent.status,
-                }
+                'paymentIntentID': payment_intent.id
 
             }, status=status.HTTP_200_OK)
 
@@ -182,7 +178,7 @@ class OrderConfirmation(GenericAPIView):
             total_amount = sum(cart_item.total for cart_item in cart_items)
             amount_returned = request_data.get('amount')
             payment_intent = request_data.get('payment_intent_id')
-            payment_intent_status = request_data.get('payment_intent_status')
+            items = request_data.get('items')
 
             order = Orders.objects.create(
                 user=user,
@@ -194,15 +190,15 @@ class OrderConfirmation(GenericAPIView):
             )
 
             order_items = []
-            for cart_item in cart_items:
+            for item in items:
                 order_item = OrderItems.objects.create(
                     order=order,
-                    item=cart_item.item,
-                    quantity=cart_item.quantity,
-                    total=cart_item.total,
-                    size=cart_item.size,
-                    kitchen_notes=cart_item.kitchen_notes,
-                    extras=cart_item.extras
+                    item=items.item,
+                    quantity=items.quantity,
+                    total=items.total,
+                    size=items.size,
+                    kitchen_notes=items.kitchen_notes,
+                    extras=items.extras
                 )
                 order_items.append(order_item)
 
@@ -221,7 +217,7 @@ class OrderConfirmation(GenericAPIView):
                 status='pending'
             )
 
-            loyalty_points = calculateLoyaltyPoints(total_amount)
+            loyalty_points = calculateLoyaltyPoints(amount_returned)
 
             loyalty_points_instance = LoyaltyPoints.objects.create(
                 user=user,
