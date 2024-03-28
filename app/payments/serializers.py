@@ -8,3 +8,7 @@ class PaymentSerializer(serializers.Serializer):
     items = OrderItemSerializer(many=True)
     order_date = serializers.DateField()
     order_time = serializers.TimeField()
+
+
+class PaymentIntentSerializer(serializers.Serializer):
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)

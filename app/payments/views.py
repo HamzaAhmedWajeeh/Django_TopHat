@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
 from tophat.serializers import OrderSerializer, OrderItemSerializer
-from .serializers import PaymentSerializer
+from .serializers import PaymentSerializer, PaymentIntentSerializer
 from tophat.functions import calculateLoyaltyPoints
 
 
@@ -113,6 +113,50 @@ class CreatePayment(GenericAPIView):
         except Exception as e:
             return Response({'message': f"Error processing payment: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
+
+class PaymentIntent(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    serializer_class = PaymentIntentSerializer
+
+    def post(self, request):
+        user = self.request.user
+        request_data = request.data
+        stripe.api_key = settings.STRIPE_SECRET_KEY
+
+        cart_items = Cart.objects.filter(user=user)
+        total_amount = sum(cart_item.total for cart_item in cart_items)
+
+        customer = stripe.Customer.list(email=user.email).data
+        if not customer:
+            customer = stripe.Customer.create(
+                name=user.name,
+                email=user.email
+            )
+        else:
+            customer = customer[0]
+
+        ephemeralKey = stripe.EphemeralKey.create(
+            customer=customer['id'],
+            stripe_version='2023-10-16'
+        )
+
+        payment_intent = stripe.PaymentIntent.create(
+                    customer=customer,
+                    currency='aud',
+                    amount=int(total_amount * 100),
+                    confirm=True,
+                    # return_url="http://localhost:9001/",
+                    receipt_email=user.email
+                )
+
+        return Response({
+
+                'paymentIntent': payment_intent.client_secret,
+                'customer': customer,
+                'ephemeralKey': ephemeralKey.secret
+
+            }, status=status.HTTP_200_OK)
 
 
 # class CreatePayment(GenericAPIView):
