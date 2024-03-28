@@ -142,7 +142,7 @@ class PaymentIntent(GenericAPIView):
         )
 
         payment_intent = stripe.PaymentIntent.create(
-                    customer=customer,
+                    customer=customer['id'],
                     currency='aud',
                     amount=int(total_amount * 100),
                     # return_url="http://localhost:9001/",
@@ -154,7 +154,8 @@ class PaymentIntent(GenericAPIView):
 
                 'paymentIntent': payment_intent.client_secret,
                 'customer': customer,
-                'ephemeralKey': ephemeralKey.secret
+                'ephemeralKey': ephemeralKey.secret,
+                'paymentIntentObject': payment_intent
 
             }, status=status.HTTP_200_OK)
 
