@@ -126,7 +126,7 @@ class PaymentIntent(GenericAPIView):
 
         cart_items = Cart.objects.filter(user=user)
         total_amount = sum(cart_item.total for cart_item in cart_items)
-        total_returned_amount = request_data.get('amount')
+        total_returned_amount = request_data['amount']
 
         customer = stripe.Customer.list(email=user.email).data
         if not customer:
