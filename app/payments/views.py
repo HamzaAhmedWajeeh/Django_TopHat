@@ -155,79 +155,80 @@ class PaymentIntent(GenericAPIView):
                 'customerEmail': customer.email,
                 'customerName': customer.name,
                 'ephemeralKey': ephemeralKey.secret,
-                'paymentIntentID': payment_intent.id
+                'paymentIntentID': payment_intent.id,
+                'paymentIntentStatus': payment_intent.status,
 
             }, status=status.HTTP_200_OK)
 
 
-# class ConfirmPayment(GenericAPIView):
-#     permission_classes = [IsAuthenticated]
-#     authentication_classes = [TokenAuthentication]
-#     serializer_class = PaymentSerializer
+class OrderConfirmation(GenericAPIView):
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
+    serializer_class = PaymentSerializer
 
-#     def post(self, request):
-#         user = self.request.user
-#         request_data = request.data
+    def post(self, request):
+        user = self.request.user
+        request_data = request.data
 
-#         with transaction.atomic():
-#             cart_items = Cart.objects.filter(user=user)
-#             total_amount = sum(cart_item.total for cart_item in cart_items)
+        with transaction.atomic():
+            cart_items = Cart.objects.filter(user=user)
+            total_amount = sum(cart_item.total for cart_item in cart_items)
+            amount_returned = request_data.get('amount')
+            payment_intent = request_data.get('payment_intent_id')
+            payment_intent_status = request_data.get('payment_intent_status')
 
-#             order = Orders.objects.create(
-#                 user=user,
-#                 order_date=request_data.get('order_date'),
-#                 order_time=request_data.get('order_time'),
-#                 amount=total_amount,
-#                 order_status='pending',
-#                 payment_status='pending'
-#             )
+            order = Orders.objects.create(
+                user=user,
+                order_date=request_data.get('order_date'),
+                order_time=request_data.get('order_time'),
+                amount=amount_returned,
+                order_status='pending',
+                payment_status='succeeded'
+            )
 
-#             order_items = []
-#             for cart_item in cart_items:
-#                 order_item = OrderItems.objects.create(
-#                     order=order,
-#                     item=cart_item.item,
-#                     quantity=cart_item.quantity,
-#                     total=cart_item.total,
-#                     size=cart_item.size,
-#                     kitchen_notes=cart_item.kitchen_notes,
-#                     extras=cart_item.extras
-#                 )
-#                 order_items.append(order_item)
+            order_items = []
+            for cart_item in cart_items:
+                order_item = OrderItems.objects.create(
+                    order=order,
+                    item=cart_item.item,
+                    quantity=cart_item.quantity,
+                    total=cart_item.total,
+                    size=cart_item.size,
+                    kitchen_notes=cart_item.kitchen_notes,
+                    extras=cart_item.extras
+                )
+                order_items.append(order_item)
 
-#             payment = Payments.objects.create(
-#                 payment_intent_id=payment_intent.id,
-#                 succeeded=payment_intent.status == 'succeeded',
-#                 order=order,
-#                 user=user,
-#                 created_by=user,
-#                 last_updated_by=user,
-#                 last_update_login=user,
-#             )
+            payment = Payments.objects.create(
+                payment_intent_id=payment_intent,
+                succeeded=payment_intent_status == 'succeeded',
+                order=order,
+                user=user,
+                created_by=user,
+                last_updated_by=user,
+                last_update_login=user,
+            )
 
-#             order.payment_status = 'succeeded'
-#             order.save()
+            notification = OrderNotifications.objects.create(
+                order=order,
+                status='pending'
+            )
 
-#             notification = OrderNotifications.objects.create(
-#                 order=order,
-#                 status='pending'
-#             )
+            loyalty_points = calculateLoyaltyPoints(total_amount)
 
-#             loyalty_points = calculateLoyaltyPoints(total_amount)
+            loyalty_points_instance = LoyaltyPoints.objects.create(
+                user=user,
+                points=loyalty_points
+            )
 
-#             loyalty_points_instance = LoyaltyPoints.objects.create(
-#                 user=user,
-#                 points=loyalty_points
-#             )
+            cart_items.delete()
 
-#             cart_items.delete()
-
-#             return Response({
-#                 'message': 'Order Confirmed',
-#                 'data': {
-#                     'order_details': OrderSerializer(order).data,
-#                     'order_items': OrderItemSerializer(order_items, many=True).data,
-#                     'loyalty_points': loyalty_points_instance.points,
-#                 }
-#             }, status=status.HTTP_200_OK)
+            return Response({
+                'message': 'Order Confirmed',
+                'data': {
+                    'order_details': OrderSerializer(order).data,
+                    'order_items': OrderItemSerializer(order_items, many=True).data,
+                    'loyalty_points': loyalty_points_instance.points,
+                }
+            }, status=status.HTTP_200_OK)
 
