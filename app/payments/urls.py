@@ -4,6 +4,6 @@ from . import views
 app_name = 'payment'
 
 urlpatterns = [
-    path('order/confirm', views.OrderConfirmation.as_view(), name='order_confirmation'),
+    path('payment/order/confirm', views.OrderConfirmation.as_view(), name='order_confirmation'),
     path('payment/intent', views.PaymentIntent.as_view(), name='payment_intent'),
 ]

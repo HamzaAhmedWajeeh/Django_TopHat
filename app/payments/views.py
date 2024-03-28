@@ -190,15 +190,15 @@ class OrderConfirmation(GenericAPIView):
             )
 
             order_items = []
-            for item in items:
+            for cart_item in cart_items:
                 order_item = OrderItems.objects.create(
                     order=order,
-                    item=items.item,
-                    quantity=items.quantity,
-                    total=items.total,
-                    size=items.size,
-                    kitchen_notes=items.kitchen_notes,
-                    extras=items.extras
+                    item=cart_item.item,
+                    quantity=cart_item.quantity,
+                    total=cart_item.total,
+                    size=cart_item.size,
+                    kitchen_notes=cart_item.kitchen_notes,
+                    extras=cart_item.extras
                 )
                 order_items.append(order_item)
 
