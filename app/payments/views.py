@@ -128,6 +128,10 @@ class PaymentIntent(GenericAPIView):
         total_amount = sum(cart_item.total for cart_item in cart_items)
         total_returned_amount = request_data.get('amount', total_amount)
 
+        total_returned_amount_float = float(total_returned_amount)
+        total_returned_amount_integer = int(total_returned_amount_float * 100)
+        print((total_returned_amount_integer) * 100)
+
         customer = stripe.Customer.list(email=user.email).data
         if not customer:
             customer = stripe.Customer.create(
@@ -145,7 +149,7 @@ class PaymentIntent(GenericAPIView):
         payment_intent = stripe.PaymentIntent.create(
                     customer=customer['id'],
                     currency='aud',
-                    amount=(total_returned_amount * 100),
+                    amount=total_returned_amount_integer,
                     receipt_email=user.email,
                 )
 

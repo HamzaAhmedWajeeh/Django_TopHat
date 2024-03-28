@@ -12,4 +12,4 @@ class PaymentSerializer(serializers.Serializer):
 
 
 class PaymentIntentSerializer(serializers.Serializer):
-    amount = serializers.FloatField(max_digits=12, decimal_places=2)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2)
