@@ -155,8 +155,10 @@ class PaymentIntent(GenericAPIView):
                 'customerEmail': customer.email,
                 'customerName': customer.name,
                 'ephemeralKey': ephemeralKey.secret,
-                'paymentIntentID': payment_intent.id,
-                'paymentIntentStatus': payment_intent.status,
+                'paymentIntentObject': {
+                    'paymentIntentID': payment_intent.id,
+                    'paymentIntentStatus': payment_intent.status,
+                }
 
             }, status=status.HTTP_200_OK)
 
@@ -201,7 +203,7 @@ class OrderConfirmation(GenericAPIView):
 
             payment = Payments.objects.create(
                 payment_intent_id=payment_intent,
-                succeeded=payment_intent_status == 'succeeded',
+                succeeded='succeeded',
                 order=order,
                 user=user,
                 created_by=user,
