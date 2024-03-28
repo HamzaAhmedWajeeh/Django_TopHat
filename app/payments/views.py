@@ -151,9 +151,11 @@ class PaymentIntent(GenericAPIView):
         return Response({
 
                 'paymentIntent': payment_intent.client_secret,
-                'customer': customer,
+                'customerID': customer.id,
+                'customerEmail': customer.email,
+                'customerName': customer.name,
                 'ephemeralKey': ephemeralKey.secret,
-                'paymentIntentReturned': payment_intent.id
+                'paymentIntentID': payment_intent.id
 
             }, status=status.HTTP_200_OK)
 
