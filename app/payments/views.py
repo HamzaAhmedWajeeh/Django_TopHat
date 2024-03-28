@@ -145,9 +145,7 @@ class PaymentIntent(GenericAPIView):
                     customer=customer['id'],
                     currency='aud',
                     amount=int(total_amount * 100),
-                    # return_url="http://localhost:9001/",
                     receipt_email=user.email,
-                    # automatic_payment_methods={"enabled": True},
                 )
 
         return Response({
