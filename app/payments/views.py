@@ -153,7 +153,7 @@ class PaymentIntent(GenericAPIView):
                 'paymentIntent': payment_intent.client_secret,
                 'customer': customer,
                 'ephemeralKey': ephemeralKey.secret,
-                'paymentIntentObject': payment_intent
+                'paymentIntentReturned': payment_intent.id
 
             }, status=status.HTTP_200_OK)
 
