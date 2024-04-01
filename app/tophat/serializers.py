@@ -235,10 +235,11 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
 class CartSerializer(serializers.ModelSerializer):
     extras = serializers.ListField(required=False, allow_empty=True)
     kitchen_notes = serializers.ListField(required=False, allow_empty=True)
+    item_image_url = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size']
+        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size']
         read_only_fields = ['id', 'user']
 
     def validate_quantity(self, value):
@@ -250,6 +251,9 @@ class CartSerializer(serializers.ModelSerializer):
         cart_items = self.context.get('cart_items', [])
         item = next((item for item in cart_items if item.id == obj.id), None)
         return item.item.name if item else ''
+
+    def get_item_image_url(self, obj):
+        return obj.item.image.url if obj.item and obj.item.image else None
 
 
 class CartItemCreateSerializer(serializers.Serializer):

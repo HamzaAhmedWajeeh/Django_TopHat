@@ -97,9 +97,9 @@ class MenuItems(models.Model):
     name = models.CharField(max_length=255, null=True)
     description = models.CharField(max_length=500, null=True)
     price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    large_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    medium_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
-    small_price = models.DecimalField(max_digits=20, decimal_places=2, null=True)
+    large_price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    medium_price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    small_price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
     category = models.ForeignKey(
         'Categories', null=True, blank=True, on_delete=models.CASCADE
         )
