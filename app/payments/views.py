@@ -178,7 +178,6 @@ class OrderConfirmation(GenericAPIView):
             total_amount = sum(cart_item.total for cart_item in cart_items)
             amount_returned = request_data.get('amount')
             payment_intent = request_data.get('payment_intent_id')
-            items = request_data.get('items')
 
             order = Orders.objects.create(
                 user=user,
