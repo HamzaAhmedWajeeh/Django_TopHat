@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from tophat.serializers import OrderItemSerializer
+from core.models import Payments
 
 
 class PaymentSerializer(serializers.Serializer):
@@ -12,3 +13,12 @@ class PaymentSerializer(serializers.Serializer):
 
 class PaymentIntentSerializer(serializers.Serializer):
     amount = serializers.DecimalField(max_digits=12, decimal_places=2)
+
+
+class PaymentModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Payments
+        fields = '__all__'
+        read_only_fields = [
+            'user'
+            ]

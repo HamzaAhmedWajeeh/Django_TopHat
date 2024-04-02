@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
 from tophat.serializers import OrderSerializer, OrderItemSerializer, NewOrderSerializer
-from .serializers import PaymentSerializer, PaymentIntentSerializer
+from .serializers import PaymentSerializer, PaymentIntentSerializer, PaymentModelSerializer
 from tophat.functions import calculateLoyaltyPoints
 
 
@@ -226,7 +226,7 @@ class OrderConfirmation(GenericAPIView):
 
             # Serialize order and order items
             order_serializer = NewOrderSerializer(order)
-            payment_serializer = PaymentSerializer(payment)
+            payment_serializer = PaymentModelSerializer(payment)
             order_item_serializer = OrderItemSerializer(order_items, many=True)
 
             return Response({
