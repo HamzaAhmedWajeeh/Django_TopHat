@@ -225,13 +225,13 @@ class OrderConfirmation(GenericAPIView):
             cart_items.delete()
 
             # Serialize order and order items
-            order_serializer = OrderSerializer(order)
+            # order_serializer = OrderSerializer(order)
             order_item_serializer = OrderItemSerializer(order_items, many=True)
 
             return Response({
                 'message': 'Order Confirmed',
                 'data': {
-                    'order_details': order_serializer.data,
+                    'order_details': order,
                     'order_items': order_item_serializer.data,
                     'loyalty_points': loyalty_points_instance.points,
                 }
