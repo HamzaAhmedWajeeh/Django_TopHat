@@ -206,9 +206,8 @@ class OrderConfirmation(GenericAPIView):
                 succeeded=True,
                 order=order,
                 user=user,
-                created_by=user,
-                last_updated_by=user,
-                last_update_login=user,
+                created_by=user.id,
+                last_updated_by=user.id
             )
 
             notification = OrderNotifications.objects.create(
