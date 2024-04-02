@@ -203,7 +203,7 @@ class OrderConfirmation(GenericAPIView):
 
             payment = Payments.objects.create(
                 payment_intent_id=payment_intent,
-                succeeded='succeeded',
+                succeeded=True,
                 order=order,
                 user=user,
                 created_by=user,
