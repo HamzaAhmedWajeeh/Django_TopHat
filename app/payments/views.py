@@ -235,7 +235,7 @@ class OrderConfirmation(GenericAPIView):
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
                     'loyalty_points': loyalty_points_instance.points,
-                    'payment_info': PaymentSerializer.data,
+                    'payment_info': payment_serializer.data,
                 }
             }, status=status.HTTP_200_OK)
 
