@@ -226,6 +226,7 @@ class OrderConfirmation(GenericAPIView):
 
             # Serialize order and order items
             order_serializer = NewOrderSerializer(order)
+            payment_serializer = PaymentSerializer(payment)
             order_item_serializer = OrderItemSerializer(order_items, many=True)
 
             return Response({
@@ -234,6 +235,7 @@ class OrderConfirmation(GenericAPIView):
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
                     'loyalty_points': loyalty_points_instance.points,
+                    'payment_info': PaymentSerializer.data,
                 }
             }, status=status.HTTP_200_OK)
 
