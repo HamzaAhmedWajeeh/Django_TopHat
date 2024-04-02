@@ -7,7 +7,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
 from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
-from tophat.serializers import OrderSerializer, OrderItemSerializer
+from tophat.serializers import OrderSerializer, OrderItemSerializer, NewOrderSerializer
 from .serializers import PaymentSerializer, PaymentIntentSerializer
 from tophat.functions import calculateLoyaltyPoints
 
@@ -231,7 +231,7 @@ class OrderConfirmation(GenericAPIView):
             return Response({
                 'message': 'Order Confirmed',
                 'data': {
-                    'order_details': order,
+                    'order_details': NewOrderSerializer(order),
                     'order_items': order_item_serializer.data,
                     'loyalty_points': loyalty_points_instance.points,
                 }
