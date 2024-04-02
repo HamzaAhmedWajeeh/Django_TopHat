@@ -222,7 +222,7 @@ class OrderConfirmation(GenericAPIView):
                 points=loyalty_points
             )
 
-            cart_items.delete()
+            # cart_items.delete()
 
             # Serialize order and order items
             order_serializer = NewOrderSerializer(order)
