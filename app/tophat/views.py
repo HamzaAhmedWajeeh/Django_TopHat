@@ -494,7 +494,7 @@ class CartGetView(generics.ListAPIView):
             # Fetch extras information if extras are present
             extras_ids = self.parse_int_list(item_data.get('extras', []))
             extras_info = Extras.objects.filter(id__in=extras_ids).values('name', 'price')
-            item_data['extras_info'] = list(extras_info)  # Convert QuerySet to list
+            item_data['extras_info'] = list(extras_info)
 
             # Fetch kitchen notes information if kitchen notes are present
             kitchen_notes_ids = self.parse_int_list(item_data.get('kitchen_notes', []))
