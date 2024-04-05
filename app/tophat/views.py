@@ -494,11 +494,15 @@ class CartGetView(generics.ListAPIView):
             kitchen_notes_ids = item_data.get('kitchen_notes')
 
             if extras_ids:
+                print(extras_ids)
                 extras_info = [{'name': extra.name, 'price': extra.price} for extra in Extras.objects.filter(pk__in=extras_ids)]
+                print(extras_info)
                 item_data['extras_info'] = extras_info
 
             if kitchen_notes_ids:
+                print(kitchen_notes_ids)
                 kitchen_notes_info = [{'name': note.name, 'price': note.price} for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_ids)]
+                print(kitchen_notes_info)
                 item_data['kitchen_notes_info'] = kitchen_notes_info
 
         response_data = {
