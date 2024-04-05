@@ -484,7 +484,8 @@ class CartGetView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer = self.get_serializer(queryset, many=True)
+        serializer_context = {'cart_items': queryset}
+        serializer = self.get_serializer(queryset, many=True, context=serializer_context)
         data = serializer.data
 
         total_amount = 0  # Initialize total amount
