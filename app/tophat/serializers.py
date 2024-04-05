@@ -262,18 +262,19 @@ class CartSerializer(serializers.ModelSerializer):
         return obj.item.image.url if obj.item and obj.item.image else None
 
     def get_extras_info(self, obj):
-        extras_ids = obj.extras.split(',') if obj.extras else []
+        extras_ids = obj.extras.split(', ') if obj.extras else []
         if len(extras_ids) > 1:
             extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
             return list(extras_info)
         return []
 
     def get_kitchen_notes_info(self, obj):
-        kitchen_notes_ids = obj.kitchen_notes.split(',') if obj.kitchen_notes else []
+        kitchen_notes_ids = obj.kitchen_notes.split(', ') if obj.kitchen_notes else []
         if len(kitchen_notes_ids) > 1:
             kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
             return list(kitchen_notes_info)
         return []
+
 
 
 
