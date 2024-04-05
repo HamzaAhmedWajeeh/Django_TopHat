@@ -492,14 +492,16 @@ class CartGetView(generics.ListAPIView):
         # Iterate through each cart item
         for item_data in data:
             # Fetch extras information if extras are present
-            extras_ids = self.parse_int_list(item_data.get('extras', []))
-            extras_info = Extras.objects.filter(id__in=extras_ids).values('name', 'price')
-            item_data['extras_info'] = list(extras_info)
+            if 'extras' in item_data and item_data['extras'] is not None:
+                extras_ids = self.parse_int_list(item_data['extras'])
+                extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
+                item_data['extras_info'] = list(extras_info)
 
             # Fetch kitchen notes information if kitchen notes are present
-            kitchen_notes_ids = self.parse_int_list(item_data.get('kitchen_notes', []))
-            kitchen_notes_info = KitchenNotes.objects.filter(id__in=kitchen_notes_ids).values('name', 'price')
-            item_data['kitchen_notes_info'] = list(kitchen_notes_info)  # Convert QuerySet to list
+            if 'kitchen_notes' in item_data and item_data['kitchen_notes'] is not None:
+                kitchen_notes_ids = self.parse_int_list(item_data['kitchen_notes'])
+                kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
+                item_data['kitchen_notes_info'] = list(kitchen_notes_info)
 
             total_amount += float(item_data['total'])  # Add total amount to the overall total
 
