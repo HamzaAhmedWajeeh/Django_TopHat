@@ -237,8 +237,8 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
 
 
 class CartSerializer(serializers.ModelSerializer):
-    extras = serializers.ListField(required=False, allow_empty=True)
-    kitchen_notes = serializers.ListField(required=False, allow_empty=True)
+    # extras = serializers.ListField(required=False, allow_empty=True)
+    # kitchen_notes = serializers.ListField(required=False, allow_empty=True)
     extras_info = serializers.SerializerMethodField()
     kitchen_notes_info = serializers.SerializerMethodField()
     item_image_url = serializers.SerializerMethodField()
@@ -263,19 +263,13 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_extras_info(self, obj):
         extras_ids = obj.extras.split(', ') if obj.extras else []
-        if len(extras_ids) > 1:
-            extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
-            return list(extras_info)
-        return []
+        extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
+        return list(extras_info)
 
     def get_kitchen_notes_info(self, obj):
         kitchen_notes_ids = obj.kitchen_notes.split(', ') if obj.kitchen_notes else []
-        if len(kitchen_notes_ids) > 1:
-            kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
-            return list(kitchen_notes_info)
-        return []
-
-
+        kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
+        return list(kitchen_notes_info)
 
 
 class CartItemCreateSerializer(serializers.Serializer):
