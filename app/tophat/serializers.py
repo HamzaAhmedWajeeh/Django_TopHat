@@ -245,7 +245,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size']
+        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info']
         read_only_fields = ['id', 'user']
 
     def validate_quantity(self, value):
