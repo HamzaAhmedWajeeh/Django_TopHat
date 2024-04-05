@@ -281,14 +281,11 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
         payment_serializer = PaymentModelSerializer(payment)
         order_item_serializer = OrderItemSerializer(order_items, many=True)
 
-        loyalty_points_serializer = self.get_serializer(loyalty_points_instance)
-
         return Response({
                 'message': 'Order Confirmed',
                 'data': {
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
-                    'loyalty_points_serializer': loyalty_points_serializer.data,
                     'loyalty_points': loyalty_points_instance.points,
                     'payment_info': payment_serializer.data,
                 }
