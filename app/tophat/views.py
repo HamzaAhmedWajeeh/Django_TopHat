@@ -222,8 +222,8 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
     def update(self, request, *args, **kwargs):
         user = self.request.user
         amount = Decimal(request.data.get('amount', 0))
-        order_date = request.data.get('order_date'),
-        order_time = request.data.get('order_time'),
+        order_date = request.data.get('order_date')
+        order_time = request.data.get('order_time')
 
         try:
             loyalty_points_instance = LoyaltyPoints.objects.get(user=user.id)
