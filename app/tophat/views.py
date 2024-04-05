@@ -484,27 +484,22 @@ class CartGetView(generics.ListAPIView):
 
     def list(self, request, *args, **kwargs):
         queryset = self.get_queryset()
-        serializer_context = {'cart_items': queryset}
-        serializer = self.get_serializer(queryset, many=True, context=serializer_context)
+        serializer = self.get_serializer(queryset, many=True)
         data = serializer.data
 
-        total_amount = 0  # Initialize total amount
+        total_amount = sum(float(item['total']) for item in data)
 
-        # Iterate through each cart item
         for item_data in data:
-            # Fetch extras information if extras are present
-            if 'extras' in item_data and item_data['extras'] is not None:
-                extras_ids = self.parse_int_list(item_data['extras'])
+            extras_ids = item_data.get('extras')
+            kitchen_notes_ids = item_data.get('kitchen_notes')
+
+            if extras_ids:
                 extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
                 item_data['extras_info'] = list(extras_info)
 
-            # Fetch kitchen notes information if kitchen notes are present
-            if 'kitchen_notes' in item_data and item_data['kitchen_notes'] is not None:
-                kitchen_notes_ids = self.parse_int_list(item_data['kitchen_notes'])
+            if kitchen_notes_ids:
                 kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
                 item_data['kitchen_notes_info'] = list(kitchen_notes_info)
-
-            total_amount += float(item_data['total'])  # Add total amount to the overall total
 
         response_data = {
             'cart_items': data,
@@ -512,18 +507,6 @@ class CartGetView(generics.ListAPIView):
         }
 
         return Response(response_data, status=status.HTTP_200_OK)
-
-    def parse_int_list(self, value):
-        try:
-            if isinstance(value, list):  # Check if value is already a list
-                return [int(item.strip()) for item in value if item.strip().isdigit()]
-            elif value:
-                # Split the string by comma and convert each element to int
-                return [int(item.strip()) for item in value.split(',') if item.strip().isdigit()]
-            else:
-                return []
-        except ValueError:
-            return []
 
 
 class AddToCartView(generics.CreateAPIView):
