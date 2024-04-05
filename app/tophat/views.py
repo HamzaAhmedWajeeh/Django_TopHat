@@ -281,6 +281,8 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
         payment_serializer = PaymentModelSerializer(payment)
         order_item_serializer = OrderItemSerializer(order_items, many=True)
 
+        cart_items.delete()
+
         return Response({
                 'message': 'Order Confirmed - Paid via Loyalty Points',
                 'data': {
