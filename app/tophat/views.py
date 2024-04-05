@@ -220,23 +220,23 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
     permission_classes = [IsAuthenticated]
 
     def update(self, request, *args, **kwargs):
-        user_id = self.request.user.id
+        user = self.request.user
         amount = Decimal(request.data.get('amount', 0))
         order_date = request.data.get('order_date'),
         order_time = request.data.get('order_time'),
 
         try:
-            loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
+            loyalty_points_instance = LoyaltyPoints.objects.get(user=user.id)
         except LoyaltyPoints.DoesNotExist:
             return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
 
         if amount > loyalty_points_instance.points:
             return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        cart_items = Cart.objects.filter(user=user_id)
+        cart_items = Cart.objects.filter(user=user)
 
         order = Orders.objects.create(
-            user=user_id,
+            user=user,
             order_date=order_date,
             order_time=order_time,
             amount=amount,
@@ -257,16 +257,16 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
             )
             order_items.append(order_item)
 
-            redemption_id = generate_redemption_id(user_id=user_id, order_date=order_date, order_time=order_time)
+            redemption_id = generate_redemption_id(user_id=user.id, order_date=order_date, order_time=order_time)
 
         payment = Payments.objects.create(
             payment_intent_id=redemption_id,
             succeeded=True,
             paid_by_points=True,
             order=order,
-            user=user_id,
-            created_by=user_id,
-            last_updated_by=user_id
+            user=user,
+            created_by=user.id,
+            last_updated_by=user.id
         )
 
         notification = OrderNotifications.objects.create(
