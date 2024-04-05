@@ -120,10 +120,15 @@ class LoyaltyPointsSerializer(serializers.Serializer):
 
 class OrderItemSerializer(serializers.ModelSerializer):
     item = serializers.PrimaryKeyRelatedField(queryset=MenuItems.objects.all())
+    item_name = serializers.SerializerMethodField()
 
     class Meta:
         model = OrderItems
-        fields = ['item', 'quantity']
+        fields = ['item', 'item_name', 'quantity']
+
+    def get_item_name(self, obj):
+        return obj.item.name if obj.item else None
+
 
 class OrderSerializer(serializers.ModelSerializer):
     items = OrderItemSerializer(source='orderitems_set', many=True, read_only=True)
