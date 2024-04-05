@@ -506,13 +506,13 @@ class CartGetView(generics.ListAPIView):
             if 'extras' in item_data and item_data['extras'] is not None:
                 extras_ids = self.parse_int_list(item_data['extras'])
                 extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
-                item_data['extras_info'] = extras_info
+                item_data['extras_info'] = list(extras_info)
 
             # Fetch kitchen notes information if kitchen notes are present
             if 'kitchen_notes' in item_data and item_data['kitchen_notes'] is not None:
                 kitchen_notes_ids = self.parse_int_list(item_data['kitchen_notes'])
                 kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
-                item_data['kitchen_notes_info'] = kitchen_notes_info
+                item_data['kitchen_notes_info'] = list(kitchen_notes_info)
 
             total_amount += float(item_data['total'])  # Add total amount to the overall total
 
