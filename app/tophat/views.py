@@ -13,7 +13,7 @@ from django.db import connection
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .methods import calculate_total, generate_redemption_id
+from .methods import calculate_total, generate_redemption_id, calculate_total_price
 from core.permissions import IsAdminUser, IsOwnerOrAdmin
 from core.models import(
     Cart,
@@ -471,17 +471,6 @@ class CartUpdateQuantity(generics.UpdateAPIView):
             status=status.HTTP_200_OK
         )
 
-def calculate_total_price(base_price, quantity, extras_prices, kitchen_notes_prices):
-    total_price = base_price * quantity
-
-    for price in extras_prices.values():
-        total_price += price
-
-    for price in kitchen_notes_prices.values():
-        total_price += price
-
-    return total_price
-
 
 class CartGetView(generics.ListAPIView):
     serializer_class = CartSerializer
@@ -503,16 +492,14 @@ class CartGetView(generics.ListAPIView):
         # Iterate through each cart item
         for item_data in data:
             # Fetch extras information if extras are present
-            if 'extras' in item_data and item_data['extras'] is not None:
-                extras_ids = self.parse_int_list(item_data['extras'])
-                extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
-                item_data['extras_info'] = list(extras_info)
+            extras_ids = self.parse_int_list(item_data.get('extras', []))
+            extras_info = Extras.objects.filter(id__in=extras_ids).values('name', 'price')
+            item_data['extras_info'] = list(extras_info)  # Convert QuerySet to list
 
             # Fetch kitchen notes information if kitchen notes are present
-            if 'kitchen_notes' in item_data and item_data['kitchen_notes'] is not None:
-                kitchen_notes_ids = self.parse_int_list(item_data['kitchen_notes'])
-                kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
-                item_data['kitchen_notes_info'] = list(kitchen_notes_info)
+            kitchen_notes_ids = self.parse_int_list(item_data.get('kitchen_notes', []))
+            kitchen_notes_info = KitchenNotes.objects.filter(id__in=kitchen_notes_ids).values('name', 'price')
+            item_data['kitchen_notes_info'] = list(kitchen_notes_info)  # Convert QuerySet to list
 
             total_amount += float(item_data['total'])  # Add total amount to the overall total
 
@@ -631,7 +618,7 @@ class AddToCartView(generics.CreateAPIView):
                 'total': str(total_price),
                 'item_id': item_id,
                 'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
-    'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
+                'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
                 'size_info': {'name': size_name} if size_name else {}
             }]
 
