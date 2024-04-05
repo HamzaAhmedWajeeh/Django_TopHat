@@ -230,7 +230,7 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
         except LoyaltyPoints.DoesNotExist:
             return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if amount < loyalty_points_instance:
+        if amount > loyalty_points_instance.points:
             return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
 
         cart_items = Cart.objects.filter(user=user_id)
