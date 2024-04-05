@@ -92,7 +92,7 @@ class LoyaltyPointsSerializer(serializers.Serializer):
 
     user = 'user.serializers.UserSerializer'
 
-    points = serializers.DecimalField(required=True, max_digits=20, decimal_places=2)
+    points = serializers.DecimalField(max_digits=20, decimal_places=2)
     amount = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
     order_date = serializers.DateField()
     order_time = serializers.TimeField()

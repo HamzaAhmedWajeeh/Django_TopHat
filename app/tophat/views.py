@@ -226,7 +226,7 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
         order_time = request.data.get('order_time'),
 
         try:
-            loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
+            loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id).first()
         except LoyaltyPoints.DoesNotExist:
             return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
 

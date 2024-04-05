@@ -216,19 +216,24 @@ class OrderConfirmation(GenericAPIView):
             )
 
             loyalty_points = calculateLoyaltyPoints(amount_returned)
+            try:
 
-            loyalty_points_instance = LoyaltyPoints.objects.create(
-                user=user,
-                points=loyalty_points
-            )
+                loyalty_points_available = LoyaltyPoints.objects.get(user=user)
+                loyalty_points_available.points = loyalty_points_available.points + loyalty_points
 
-            # cart_items.delete()
+            except LoyaltyPoints.DoesNotExist:
 
-            # Serialize order and order items
+                loyalty_points_instance = LoyaltyPoints.objects.create(
+                    user=user,
+                    points=loyalty_points
+                )
+
             order_serializer = NewOrderSerializer(order)
             payment_serializer = PaymentModelSerializer(payment)
             order_item_serializer = OrderItemSerializer(order_items, many=True)
             # order_item_data = OrderItemSerializer(order_items, many=True).data
+
+            cart_items.delete()
 
             return Response({
                 'message': 'Order Confirmed',
@@ -240,4 +245,3 @@ class OrderConfirmation(GenericAPIView):
                     'payment_info': payment_serializer.data,
                 }
             }, status=status.HTTP_200_OK)
-
