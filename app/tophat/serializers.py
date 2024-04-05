@@ -276,7 +276,7 @@ class CartItemCreateSerializer(serializers.Serializer):
     item_id = serializers.IntegerField(required=True)
     quantity = serializers.IntegerField(required=True)
     user_id = serializers.IntegerField(required=False)
-    size =  serializers.CharField(required=False)
+    size = serializers.CharField(required=False)
     total = serializers.DecimalField(required=False, max_digits=20, decimal_places=2)
     extras = serializers.ListField(required=False, allow_empty=True)
     kitchen_notes = serializers.ListField(required=False, allow_empty=True)
