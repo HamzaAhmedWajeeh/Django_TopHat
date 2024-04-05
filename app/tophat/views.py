@@ -282,7 +282,7 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
         order_item_serializer = OrderItemSerializer(order_items, many=True)
 
         return Response({
-                'message': 'Order Confirmed',
+                'message': 'Order Confirmed - Paid via Loyalty Points',
                 'data': {
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
