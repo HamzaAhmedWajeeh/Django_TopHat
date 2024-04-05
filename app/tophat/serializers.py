@@ -263,13 +263,18 @@ class CartSerializer(serializers.ModelSerializer):
 
     def get_extras_info(self, obj):
         extras_ids = obj.extras.split(',') if obj.extras else []
-        extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
-        return list(extras_info)
+        if len(extras_ids) > 1:
+            extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
+            return list(extras_info)
+        return []
 
     def get_kitchen_notes_info(self, obj):
         kitchen_notes_ids = obj.kitchen_notes.split(',') if obj.kitchen_notes else []
-        kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
-        return list(kitchen_notes_info)
+        if len(kitchen_notes_ids) > 1:
+            kitchen_notes_info = KitchenNotes.objects.filter(pk__in=kitchen_notes_ids).values('name', 'price')
+            return list(kitchen_notes_info)
+        return []
+
 
 
 class CartItemCreateSerializer(serializers.Serializer):
