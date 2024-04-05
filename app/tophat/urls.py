@@ -29,8 +29,8 @@ urlpatterns = [
     path('menuitems/delete/<int:pk>/', views.MenuItemsDeleteAPIView.as_view(), name='menuitems-delete'),
     path('menuitems/new/', views.MenuItemsCreateAPIView.as_view(), name='menuitems-delete'),
 
-    path('points/', views.LoyaltyPointsCreation.as_view(), name='loyalty-points-create'),
-    path('points/redeem/', views.LoyaltyPointsRedemption.as_view(), name='loyalty-points-redeem'),
+    # path('points/', views.LoyaltyPointsCreation.as_view(), name='loyalty-points-create'),
+    # path('points/redeem/', views.LoyaltyPointsRedemption.as_view(), name='loyalty-points-redeem'),
     path('points/get/', views.LoyaltyPointsGet.as_view(), name='loyalty-points-get'),
 
     path('extras/<int:item_id>/', views.ExtrasListByItemView.as_view(), name='extras-item-id'),

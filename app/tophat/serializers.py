@@ -92,7 +92,11 @@ class LoyaltyPointsSerializer(serializers.Serializer):
 
     user = 'user.serializers.UserSerializer'
 
-    points = serializers.DecimalField(required=True, max_digits=20, decimal_places=3)
+    points = serializers.DecimalField(required=True, max_digits=20, decimal_places=2)
+    amount = serializers.DecimalField(required=True, max_digits=10, decimal_places=2)
+    order_date = serializers.DateField()
+    order_time = serializers.TimeField()
+
 
     def create(self, validated_data):
         """Add points based on order value"""

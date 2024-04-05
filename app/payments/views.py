@@ -175,7 +175,6 @@ class OrderConfirmation(GenericAPIView):
 
         with transaction.atomic():
             cart_items = Cart.objects.filter(user=user)
-            total_amount = sum(cart_item.total for cart_item in cart_items)
             amount_returned = request_data.get('amount')
             payment_intent = request_data.get('payment_intent_id')
 
@@ -204,6 +203,7 @@ class OrderConfirmation(GenericAPIView):
             payment = Payments.objects.create(
                 payment_intent_id=payment_intent,
                 succeeded=True,
+                paid_by_points=False,
                 order=order,
                 user=user,
                 created_by=user.id,
@@ -228,12 +228,14 @@ class OrderConfirmation(GenericAPIView):
             order_serializer = NewOrderSerializer(order)
             payment_serializer = PaymentModelSerializer(payment)
             order_item_serializer = OrderItemSerializer(order_items, many=True)
+            # order_item_data = OrderItemSerializer(order_items, many=True).data
 
             return Response({
                 'message': 'Order Confirmed',
                 'data': {
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
+                    # 'order_items': order_item_data,
                     'loyalty_points': loyalty_points_instance.points,
                     'payment_info': payment_serializer.data,
                 }

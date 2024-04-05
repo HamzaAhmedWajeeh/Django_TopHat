@@ -13,7 +13,7 @@ from django.db import connection
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
-from .methods import calculate_total
+from .methods import calculate_total, generate_redemption_id
 from core.permissions import IsAdminUser, IsOwnerOrAdmin
 from core.models import(
     Cart,
@@ -27,7 +27,8 @@ from core.models import(
     KitchenNotes,
     Sizes,
     OrderNotifications,
-    User
+    User,
+    Payments,
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -42,8 +43,10 @@ from .serializers import(
     SizeSerializer,
     OrderNotificationsSerializer,
     KitchenNoteSerializer,
-    NewOrderSerializer
+    NewOrderSerializer,
+    OrderItemSerializer
 )
+from payments.serializers import PaymentModelSerializer
 from decimal import Decimal
 from rest_framework.exceptions import ValidationError
 
@@ -218,24 +221,78 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
 
     def update(self, request, *args, **kwargs):
         user_id = self.request.user.id
-        points_to_redeem = Decimal(request.data.get('points', 0))
+        amount = Decimal(request.data.get('amount', 0))
+        order_date = request.data.get('order_date'),
+        order_time = request.data.get('order_time'),
 
         try:
             loyalty_points_instance = LoyaltyPoints.objects.get(user=user_id)
         except LoyaltyPoints.DoesNotExist:
             return Response({'detail': 'User does not have any loyalty points.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        if loyalty_points_instance.points < points_to_redeem:
+        if amount < loyalty_points_instance:
             return Response({'detail': 'Not enough points to redeem.'}, status=status.HTTP_400_BAD_REQUEST)
 
-        # Perform additional logic for redeeming points (e.g., apply discount, update order total, etc.)
-        # Assuming you have an Order model, you can update it accordingly in this section.
+        cart_items = Cart.objects.filter(user=user_id)
 
-        loyalty_points_instance.points -= points_to_redeem
+        order = Orders.objects.create(
+            user=user_id,
+            order_date=order_date,
+            order_time=order_time,
+            amount=amount,
+            order_status='pending',
+            payment_status='succeeded'
+        )
+
+        order_items = []
+        for cart_item in cart_items:
+            order_item = OrderItems.objects.create(
+                order=order,
+                item=cart_item.item,
+                quantity=cart_item.quantity,
+                total=cart_item.total,
+                size=cart_item.size,
+                kitchen_notes=cart_item.kitchen_notes,
+                extras=cart_item.extras
+            )
+            order_items.append(order_item)
+
+            redemption_id = generate_redemption_id(user_id=user_id, order_date=order_date, order_time=order_time)
+
+        payment = Payments.objects.create(
+            payment_intent_id=redemption_id,
+            succeeded=True,
+            paid_by_points=True,
+            order=order,
+            user=user_id,
+            created_by=user_id,
+            last_updated_by=user_id
+        )
+
+        notification = OrderNotifications.objects.create(
+            order=order,
+            status='pending'
+        )
+
+        loyalty_points_instance.points -= amount
         loyalty_points_instance.save()
 
-        serializer = self.get_serializer(loyalty_points_instance)
-        return Response(serializer.data)
+        order_serializer = NewOrderSerializer(order)
+        payment_serializer = PaymentModelSerializer(payment)
+        order_item_serializer = OrderItemSerializer(order_items, many=True)
+
+        loyalty_points_serializer = self.get_serializer(loyalty_points_instance)
+
+        return Response({
+                'message': 'Order Confirmed',
+                'data': {
+                    'order_details': order_serializer.data,
+                    'order_items': order_item_serializer.data,
+                    'loyalty_points_serializer': loyalty_points_serializer.data,
+                    'loyalty_points': loyalty_points_instance.points,
+                    'payment_info': payment_serializer.data,
+                }
+            }, status=status.HTTP_200_OK)
 
 
 class LoyaltyPointsGet(generics.RetrieveAPIView):

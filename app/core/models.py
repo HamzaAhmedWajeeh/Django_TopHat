@@ -170,7 +170,8 @@ class Payments(models.Model):
         'User', null=True, blank=True, on_delete=models.CASCADE
         )
     succeeded = models.BooleanField(default=False)
-    payment_intent_id = models.CharField(max_length=500)
+    paid_by_points = models.BooleanField(default=False)
+    payment_intent_id = models.CharField(max_length=500, null=True, blank=True)
 
     # who columns
     creation_date = models.DateTimeField(auto_now=True, null=True, blank=True)
