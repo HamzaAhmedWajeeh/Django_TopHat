@@ -37,7 +37,7 @@ class UserSerializer(serializers.ModelSerializer):
         user.generate_verification_token()
 
         subject = "Verify Your Email"
-        verification_link = f"https://app.smmart.ai/#/verify?verification_token={user.verification_token}"
+        verification_link = f"http://localhost:4200/verification-stats?verification_token={user.verification_token}"
         html_message = render_to_string(
             'accounts/verify_email.html', {'verification_link': verification_link}
             )

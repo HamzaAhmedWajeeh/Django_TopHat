@@ -10,6 +10,9 @@ from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications,
 from tophat.serializers import OrderSerializer, OrderItemSerializer, NewOrderSerializer
 from .serializers import PaymentSerializer, PaymentIntentSerializer, PaymentModelSerializer
 from tophat.functions import calculateLoyaltyPoints
+from django.core.mail import send_mail
+from django.template.loader import render_to_string
+from django.conf import settings
 
 
 class CreatePayment(GenericAPIView):
@@ -234,6 +237,25 @@ class OrderConfirmation(GenericAPIView):
             # order_item_data = OrderItemSerializer(order_items, many=True).data
 
             cart_items.delete()
+
+            subject = "Tophat Coffee - Order Confirmed"
+            html_message = render_to_string(
+                'payment/invoice.html',
+                context={
+                    'username': user.name, 'user_address': user.address,
+                    'customer_email': user.email, 'order_date': order.date,
+                    'user_phone': user.phone, 'user_city': user.city,
+                    'order_number': order.id, 'amount': order.amount,
+                    'order_items': order_items
+                }
+            )
+            send_mail(
+                subject,
+                message=None,
+                from_email=settings.DEFAULT_FROM_EMAIL,
+                recipient_list=user.email,
+                html_message=html_message
+            )
 
             return Response({
                 'message': 'Order Confirmed',
