@@ -90,7 +90,7 @@ class Feedback(models.Model):
     last_update_login = models.IntegerField(null=True, blank=True)
 
     def __str__(self):
-        return self.user.name
+        return self.user
 
 
 class MenuItems(models.Model):

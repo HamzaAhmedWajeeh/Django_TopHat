@@ -14,7 +14,6 @@ from core.models import(
     OrderNotifications,
     KitchenNotes
 )
-from user.serializers import UserSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import (
@@ -49,12 +48,13 @@ class CategoriesSerializer(serializers.ModelSerializer):
 class FeedbackSerializer(serializers.ModelSerializer):
     """Serializer for Feedback Object"""
 
-    user_obj = UserSerializer(read_only=True)
+    user_email = serializers.EmailField(source='user.email', read_only=True)
+    user_name = serializers.CharField(source='user.name', read_only=True)
 
     class Meta:
         model = Feedback
         fields = [
-            'id', 'user', 'user_obj', 'message', 'creation_date', 'created_by',
+            'id', 'user', 'user_email', 'user_name', 'message', 'creation_date', 'created_by',
             'last_update_date', 'last_updated_by', 'last_update_login'
         ]
 
@@ -62,6 +62,12 @@ class FeedbackSerializer(serializers.ModelSerializer):
             'id', 'user', 'creation_date', 'created_by',
             'price', 'last_updated_by', 'last_update_login', 'user_obj'
             ]
+
+        def to_representation(self, instance):
+            """Override to include user_name and user_email"""
+            representation = super().to_representation(instance)
+            representation.pop('user')  # Remove user field from response
+            return representation
 
 
 class MenuItemsSerializer(serializers.ModelSerializer):
