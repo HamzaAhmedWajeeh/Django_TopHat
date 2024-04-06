@@ -14,6 +14,7 @@ from core.models import(
     OrderNotifications,
     KitchenNotes
 )
+from user.serializers import UserSerializer
 from rest_framework.exceptions import ValidationError
 from rest_framework.response import Response
 from rest_framework import (
@@ -47,16 +48,19 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 class FeedbackSerializer(serializers.ModelSerializer):
     """Serializer for Feedback Object"""
+
+    user_obj = UserSerializer(read_only=True)
+
     class Meta:
         model = Feedback
         fields = [
-            'id', 'user', 'message', 'creation_date', 'created_by',
+            'id', 'user', 'user_obj', 'message', 'creation_date', 'created_by',
             'last_update_date', 'last_updated_by', 'last_update_login'
         ]
 
         read_only_fields = [
             'id', 'user', 'creation_date', 'created_by',
-            'price', 'last_updated_by', 'last_update_login'
+            'price', 'last_updated_by', 'last_update_login', 'user_obj'
             ]
 
 
