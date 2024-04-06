@@ -45,7 +45,8 @@ from .serializers import(
     OrderNotificationsSerializer,
     KitchenNoteSerializer,
     NewOrderSerializer,
-    OrderItemSerializer
+    OrderItemSerializer,
+    LoyaltyPointsPercentageSerializer
 )
 from payments.serializers import PaymentModelSerializer
 from decimal import Decimal
@@ -331,7 +332,7 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
 
 class LoyaltyPointsPercentage(generics.UpdateAPIView):
     queryset = LoyaltyPointsPercentage.objects.all()
-    serializer_class = LoyaltyPointsSerializer
+    serializer_class = LoyaltyPointsPercentageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
 

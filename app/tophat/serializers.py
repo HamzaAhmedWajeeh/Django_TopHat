@@ -136,7 +136,7 @@ class LoyaltyPointsSerializer(serializers.Serializer):
         return loyalty_points_instance
 
 
-class LoyaltyPointsPercentage(serializers.ModelSerializer):
+class LoyaltyPointsPercentageSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoyaltyPointsPercentage
         fields = [
