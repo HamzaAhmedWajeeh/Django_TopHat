@@ -59,5 +59,7 @@ urlpatterns = [
 
     path('kitchen/list/<int:menu_item_id>', views.KitchenNoteListView.as_view(), name='kitchen-list'),
 
+    path('reorder/last/order', views.ReOrderLastOrder.as_view(), name='re-order-last-order'),
+
     path('', include(router.urls)),
 ]

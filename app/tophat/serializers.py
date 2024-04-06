@@ -3,7 +3,7 @@ from core.models import(
     Categories,
     Feedback,
     MenuItems,
-    # Payments,
+    LoyaltyPointsPercentage,
     Orders,
     OrderItems,
     LoyaltyPoints,
@@ -114,7 +114,15 @@ class LoyaltyPointsSerializer(serializers.Serializer):
         user_id = self.context['request'].user
         order_value = validated_data.pop('points', None)
 
-        points_earned = Decimal(order_value) * Decimal('0.1')
+        loyalty_points_percentage = LoyaltyPointsPercentage.objects.first()
+
+        if loyalty_points_percentage:
+            points_percentage = loyalty_points_percentage.percentage
+        else:
+            # If no percentage is found, default to 10%
+            points_percentage = Decimal('0.1')
+
+        points_earned = Decimal(order_value) * Decimal(points_percentage)
 
         loyalty_points_instance, created = LoyaltyPoints.objects.get_or_create(user=user_id)
 
@@ -126,6 +134,18 @@ class LoyaltyPointsSerializer(serializers.Serializer):
         loyalty_points_instance.save()
 
         return loyalty_points_instance
+
+
+class LoyaltyPointsPercentage(serializers.ModelSerializer):
+    class Meta:
+        model = LoyaltyPointsPercentage
+        fields = [
+            'id', 'percentage', 'creation_date', 'created_by', 'last_updated_by',
+            'last_update_login', 'last_update_date'
+        ]
+        read_only_fields = [
+            'id', 'creation_date', 'created_by'
+        ]
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
