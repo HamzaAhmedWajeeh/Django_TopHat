@@ -29,6 +29,7 @@ from core.models import(
     OrderNotifications,
     User,
     Payments,
+    LoyaltyPointsPercentage
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -326,6 +327,28 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
         user = self.request.user
         loyalty_points_instance = LoyaltyPoints.objects.get(user=user)
         return loyalty_points_instance
+
+
+class LoyaltyPointsPercentage(generics.UpdateAPIView):
+    queryset = LoyaltyPointsPercentage.objects.all()
+    serializer_class = LoyaltyPointsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated, IsAdminUser]
+
+    def update(self, request, *args, **kwargs):
+        percentage = Decimal(request.data.get('percentage', 0))
+
+        loyalty_points_instance = get_object_or_404(LoyaltyPointsPercentage, pk=1)
+        serializer = self.get_serializer(loyalty_points_instance, data={'percentage': percentage}, partial=True)
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+
+        updated_data = serializer.data
+
+        return Response({
+            'message': 'Loyalty points percentage updated successfully.',
+            'loyalty_points': updated_data
+        }, status=status.HTTP_200_OK)
 
 
 # Extras START

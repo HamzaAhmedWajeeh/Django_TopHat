@@ -61,5 +61,7 @@ urlpatterns = [
 
     path('reorder/last/order', views.ReOrderLastOrder.as_view(), name='re-order-last-order'),
 
+    path('update/points/logic/percentage', views.LoyaltyPointsPercentage.as_view(), name='update-points-percentage'),
+
     path('', include(router.urls)),
 ]
