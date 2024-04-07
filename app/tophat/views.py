@@ -330,12 +330,12 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
         return loyalty_points_instance
 
 
-class LoyaltyPointsPercentageGet(generics.RetrieveAPIView):
+class LoyaltyPointsPercentageGet(generics.ListAPIView):
     queryset = LoyaltyPointsPercentage.objects.all()
     serializer_class = LoyaltyPointsPercentageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
-    lookup_field = 'id'
+    # lookup_field = 'id'
 
 
 class LoyaltyPointsPercentageUpdate(generics.UpdateAPIView):
