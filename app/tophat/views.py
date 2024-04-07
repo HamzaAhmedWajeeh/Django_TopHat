@@ -314,7 +314,6 @@ class LoyaltyPointsRedemption(generics.UpdateAPIView):
 
 
 class LoyaltyPointsGet(generics.RetrieveAPIView):
-    queryset = LoyaltyPoints.objects.all()
     serializer_class = LoyaltyPointsSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
@@ -322,8 +321,15 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
     def get_object(self):
         """Retrieve loyalty points for the current authenticated user"""
         user = self.request.user
-        loyalty_points_instance = LoyaltyPoints.objects.get(user=user)
-        return loyalty_points_instance
+        try:
+            loyalty_points_instance = LoyaltyPoints.objects.get(user=user)
+            return loyalty_points_instance
+        except LoyaltyPoints.DoesNotExist:
+            return Response({
+                'message': 'Loyalty points not found for this user',
+                'data': loyalty_points_instance
+
+            }, status=status.HTTP_200_OK)
 
 
 class LoyaltyPointsPercentageGet(generics.ListAPIView):
@@ -752,7 +758,8 @@ class OrderHistory(generics.ListAPIView):
 
 # Re Order last ORDER
 class ReOrderLastOrder(generics.ListAPIView):
-    serializer_class = CartSerializer  # Assuming you have a serializer for Cart model
+    serializer_class = CartSerializer
+    queryset = Cart.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
