@@ -335,6 +335,7 @@ class LoyaltyPointsPercentageGet(generics.RetrieveAPIView):
     serializer_class = LoyaltyPointsPercentageSerializer
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated, IsAdminUser]
+    lookup_field = 'id'
 
 
 class LoyaltyPointsPercentageUpdate(generics.UpdateAPIView):
