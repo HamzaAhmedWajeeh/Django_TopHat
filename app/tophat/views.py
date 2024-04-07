@@ -326,10 +326,8 @@ class LoyaltyPointsGet(generics.RetrieveAPIView):
             return loyalty_points_instance
         except LoyaltyPoints.DoesNotExist:
             return Response({
-                'message': 'Loyalty points not found for this user',
-                'data': loyalty_points_instance
-
-            }, status=status.HTTP_200_OK)
+                'message': 'Loyalty points not found for this user'
+            }, status=status.HTTP_404_NOT_FOUND)
 
 
 class LoyaltyPointsPercentageGet(generics.ListAPIView):
