@@ -6,7 +6,14 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.authentication import TokenAuthentication
-from core.models import (Payments, Orders, OrderItems, Cart, OrderNotifications, LoyaltyPoints)
+from core.models import (
+    Payments,
+    Orders,
+    OrderItems,
+    Cart,
+    OrderNotifications,
+    LoyaltyPoints
+    )
 from tophat.serializers import OrderSerializer, OrderItemSerializer, NewOrderSerializer
 from .serializers import PaymentSerializer, PaymentIntentSerializer, PaymentModelSerializer
 from tophat.functions import calculateLoyaltyPoints

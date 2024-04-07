@@ -7,7 +7,6 @@ router = DefaultRouter()
 router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
 router.register('kitchen', viewset=views.KitchenNoteModelViewSet, basename='kitchen')
 
-
 app_name = 'tophat'
 
 urlpatterns = [
@@ -29,9 +28,10 @@ urlpatterns = [
     path('menuitems/delete/<int:pk>/', views.MenuItemsDeleteAPIView.as_view(), name='menuitems-delete'),
     path('menuitems/new/', views.MenuItemsCreateAPIView.as_view(), name='menuitems-delete'),
 
-    # path('points/', views.LoyaltyPointsCreation.as_view(), name='loyalty-points-create'),
     path('points/redeem/', views.LoyaltyPointsRedemption.as_view(), name='loyalty-points-redeem'),
     path('points/get/', views.LoyaltyPointsGet.as_view(), name='loyalty-points-get'),
+    path('points/logic/update', views.LoyaltyPointsPercentageUpdate.as_view(), name='update-points-percentage'),
+    path('points/logic/get', views.LoyaltyPointsPercentageGet.as_view(), name='update-points-percentage'),
 
     path('extras/<int:item_id>/', views.ExtrasListByItemView.as_view(), name='extras-item-id'),
     path('extras/delete/<int:item_id>/', views.ExtrasDeleteByItemID.as_view(), name='extras-delete-item-id'),
@@ -60,9 +60,6 @@ urlpatterns = [
     path('kitchen/list/<int:menu_item_id>', views.KitchenNoteListView.as_view(), name='kitchen-list'),
 
     path('reorder/last/order', views.ReOrderLastOrder.as_view(), name='re-order-last-order'),
-
-    path('points/logic/update', views.LoyaltyPointsPercentageUpdate.as_view(), name='update-points-percentage'),
-    path('points/logic/get', views.LoyaltyPointsPercentageGet.as_view(), name='update-points-percentage'),
 
     path('', include(router.urls)),
 ]

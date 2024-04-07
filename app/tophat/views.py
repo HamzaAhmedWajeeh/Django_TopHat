@@ -5,12 +5,8 @@ from rest_framework import (
     viewsets,
     status
 )
-import json
-from django.core.serializers.json import DjangoJSONEncoder
 from decimal import Decimal
-from django.http import JsonResponse
 from django.db import connection
-from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from .methods import calculate_total, generate_redemption_id, calculate_total_price
@@ -71,7 +67,7 @@ class CategoriesDetailAPIView(generics.RetrieveAPIView):
     serializer_class = CategoriesSerializer
     queryset = Categories.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class CategoriesUpdateAPIView(generics.UpdateAPIView):
@@ -215,7 +211,7 @@ class LoyaltyPointsCreation(generics.CreateAPIView):
     queryset = LoyaltyPoints.objects.all()
     serializer_class = LoyaltyPointsSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
 
 class LoyaltyPointsRedemption(generics.UpdateAPIView):
@@ -359,7 +355,7 @@ class LoyaltyPointsPercentageUpdate(generics.UpdateAPIView):
 class ExtrasListByItemView(generics.ListAPIView):
     serializer_class = ExtrasSerializer
     authentication_classes = [authentication.TokenAuthentication]
-    # permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated]
 
     def get_queryset(self):
         item_id = self.kwargs['item_id']

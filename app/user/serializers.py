@@ -11,10 +11,6 @@ from django.conf import settings
 from django.template.loader import render_to_string
 
 from rest_framework import serializers
-# from django.utils import timezone
-from core.models import (
-    User
-    )
 
 from user.utils import decrypt_email
 
