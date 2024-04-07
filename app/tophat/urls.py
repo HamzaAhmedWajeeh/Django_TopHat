@@ -61,7 +61,8 @@ urlpatterns = [
 
     path('reorder/last/order', views.ReOrderLastOrder.as_view(), name='re-order-last-order'),
 
-    path('update/points/logic/percentage', views.LoyaltyPointsPercentageUpdate.as_view(), name='update-points-percentage'),
+    path('points/logic/update', views.LoyaltyPointsPercentageUpdate.as_view(), name='update-points-percentage'),
+    path('points/logic/get', views.LoyaltyPointsPercentageGet.as_view(), name='update-points-percentage'),
 
     path('', include(router.urls)),
 ]
