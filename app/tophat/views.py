@@ -343,7 +343,7 @@ class LoyaltyPointsPercentageUpdate(generics.UpdateAPIView):
             loyalty_points_instance = LoyaltyPointsPercentage.objects.first()
             loyalty_points_instance.percentage = percentage
             loyalty_points_instance.save()
-            return Response({'message': 'Loyalty points percentage updated successfully.', 'info':loyalty_points_instance}, status=status.HTTP_200_OK)
+            return Response({'message': 'Loyalty points percentage updated successfully.'}, status=status.HTTP_200_OK)
         except LoyaltyPointsPercentage.DoesNotExist:
             return Response({'detail': 'No data found for loyalty points percentage logic'}, status=status.HTTP_400_BAD_REQUEST)
 
