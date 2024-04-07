@@ -771,7 +771,7 @@ class ReOrderLastOrder(generics.ListAPIView):
         if not last_order or last_order == [] or last_order is None:
             return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
 
-        last_order_items = OrderItems.objects.filter(order=last_order).first()
+        last_order_items = OrderItems.objects.filter(order=last_order)
 
         if not last_order_items or last_order_items == [] or last_order_items is None:
             return Response({
