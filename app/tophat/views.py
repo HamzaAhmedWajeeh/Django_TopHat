@@ -767,15 +767,16 @@ class ReOrderLastOrder(generics.ListAPIView):
     def post(self, request):
         user = self.request.user
         last_order = Orders.objects.filter(user=user).order_by('-date').first()
-        logger.debug(last_order_items)
-        print(last_order_items)
 
-        if not last_order:
+        if not last_order or last_order == [] or last_order is None:
             return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
 
         last_order_items = OrderItems.objects.filter(order=last_order).first()
-        logger.debug(last_order_items)
-        print(last_order_items)
+
+        if not last_order_items or last_order_items == [] or last_order_items is None:
+            return Response({
+                "message": "No order items found in your previous order",
+            }, status=status.HTTP_404_NOT_FOUND)
 
         # Delete existing items in the cart for the user
         Cart.objects.filter(user=user).delete()
