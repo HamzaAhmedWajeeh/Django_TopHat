@@ -751,8 +751,8 @@ class OrderHistory(generics.ListAPIView):
 
 
 # Re Order last ORDER
-class ReOrderLastOrder(generics.GenericAPIView):
-    serializer_class = OrderSerializer
+class ReOrderLastOrder(generics.ListAPIView):
+    serializer_class = CartSerializer  # Assuming you have a serializer for Cart model
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
@@ -763,30 +763,31 @@ class ReOrderLastOrder(generics.GenericAPIView):
         if not last_order:
             return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Retrieve order items from the last order
         last_order_items = OrderItems.objects.filter(order=last_order)
 
-        # Create a new order with the same items
-        new_order_data = {
-            "user": user,
-            "order_date": last_order.order_date,
-            "order_time": last_order.order_time,
-            "amount": last_order.amount,
-            "order_status": "pending",  # or any default status you want for the new order
-            "payment_status": "pending",  # or any default status you want for the new order
-        }
+        # Delete existing items in the cart for the user
+        Cart.objects.filter(user=user).delete()
 
-        new_order_serializer = OrderSerializer(data=new_order_data)
-        if new_order_serializer.is_valid():
-            new_order = new_order_serializer.save()
+        # Add order items to the cart
+        for item in last_order_items:
+            Cart.objects.create(
+                user=user,
+                item=item.item,
+                quantity=item.quantity,
+                total=item.total,
+                size=item.size,
+                kitchen_notes=item.kitchen_notes,
+                extras=item.extras
+            )
 
-            # Create order items for the new order
-            for item in last_order_items:
-                OrderItems.objects.create(order=new_order, item=item.item, quantity=item.quantity, total=item.total)
+        # Fetch cart items after updating the cart
+        cart_items = Cart.objects.filter(user=user)
+        cart_serializer = self.serializer_class(cart_items, many=True)
 
-            return Response(new_order_serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(new_order_serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            "message": "Cart updated with items from the last order.",
+            "cart_items": cart_serializer.data
+        }, status=status.HTTP_200_OK)
 
 
 class OrderItemsCreateAPIView(generics.CreateAPIView):
