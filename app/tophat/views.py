@@ -5,7 +5,6 @@ from rest_framework import (
     viewsets,
     status
 )
-from datetime import datetime
 from decimal import Decimal
 from django.db import connection
 from rest_framework.response import Response
@@ -1008,10 +1007,6 @@ class NotificationListView(generics.ListAPIView):
                     'size': order_item.size
                 }
                 order_data['order_items'].append(item_data)
-
-             # Convert order time to AM/PM format
-            order_time = datetime.strptime(order.order_time, '%H:%M:%S').strftime('%I:%M %p')
-            order_data['order']['order_time'] = order_time
 
             orders_and_items.append(order_data)
 
