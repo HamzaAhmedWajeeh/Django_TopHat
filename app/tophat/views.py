@@ -764,7 +764,7 @@ class ReOrderLastOrder(generics.ListAPIView):
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def post(self, request):
+    def get(self, request):
         user = self.request.user
         last_order = Orders.objects.filter(user=user).order_by('-date').first()
 
