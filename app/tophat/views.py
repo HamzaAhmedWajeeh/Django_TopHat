@@ -51,7 +51,9 @@ from rest_framework.exceptions import ValidationError
 from django.core.mail import send_mail
 from django.template.loader import render_to_string
 from django.conf import settings
+import logging
 
+logger = logging.getLogger(__name__)
 
 # Categories START
 class CategoriesListAPIView(generics.ListAPIView):
@@ -765,12 +767,14 @@ class ReOrderLastOrder(generics.ListAPIView):
     def post(self, request):
         user = self.request.user
         last_order = Orders.objects.filter(user=user).order_by('-date').first()
-        print(last_order)
+        logger.debug(last_order_items)
+        print(last_order_items)
 
         if not last_order:
             return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
 
-        last_order_items = OrderItems.objects.filter(order=last_order)
+        last_order_items = OrderItems.objects.filter(order=last_order).first()
+        logger.debug(last_order_items)
         print(last_order_items)
 
         # Delete existing items in the cart for the user
