@@ -132,6 +132,17 @@ class LoyaltyPointsSerializer(serializers.Serializer):
         return loyalty_points_instance
 
 
+class LoyaltyPointsModelSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LoyaltyPoints
+        fields = [
+            'id', 'user', 'points'
+        ]
+        read_only_fields = [
+            'id', 'user'
+        ]
+
+
 class LoyaltyPointsPercentageSerializer(serializers.ModelSerializer):
     class Meta:
         model = LoyaltyPointsPercentage
