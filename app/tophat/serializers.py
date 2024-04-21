@@ -288,7 +288,7 @@ class CartSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info', 'item_name']
+        fields = ['id', 'user', 'item_name', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info']
         read_only_fields = ['id', 'user', 'extras_info', 'kitchen_notes_info']
 
     def validate_quantity(self, value):
@@ -296,10 +296,17 @@ class CartSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Quantity must be a positive integer.")
         return value
 
+    # def get_item_name(self, obj):
+    #     cart_items = self.context.get('cart_items', [])
+    #     item = next((item for item in cart_items if item.id == obj.id), None)
+    #     return item.item.name if item else ''
+
     def get_item_name(self, obj):
+        # Use obj.item_id instead of obj.id
         cart_items = self.context.get('cart_items', [])
-        item = next((item for item in cart_items if item.id == obj.id), None)
-        return item.item.name if item else ''
+        item = next((item for item in cart_items if item['id'] == obj.id), None)
+        return item['item']['name'] if item and 'item' in item else ''
+
 
     def get_item_image_url(self, obj):
         return obj.item.image.url if obj.item and obj.item.image else None
