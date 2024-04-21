@@ -302,10 +302,8 @@ class CartSerializer(serializers.ModelSerializer):
     #     return item.item.name if item else ''
 
     def get_item_name(self, obj):
-        # Use obj.item_id instead of obj.id
-        cart_items = self.context.get('cart_items', [])
-        item = next((item for item in cart_items if item['id'] == obj.id), None)
-        return item['item']['name'] if item and 'item' in item else ''
+        # Use obj.item.name instead of trying to search through cart_items
+        return obj.item.name if obj.item else ''
 
 
     def get_item_image_url(self, obj):
