@@ -508,7 +508,7 @@ class CartUpdateQuantity(generics.UpdateAPIView):
 
         # Update extras, size, and kitchen notes if provided
         cart_item.size = size
-        cart_item.price = total_price
+        cart_item.total = total_price
         cart_item.extras = ','.join(map(str, extras))
         cart_item.kitchen_notes = ','.join(map(str, kitchen_notes))
 
