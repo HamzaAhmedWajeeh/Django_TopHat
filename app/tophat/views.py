@@ -484,7 +484,7 @@ class CartUpdateQuantity(generics.UpdateAPIView):
                 raise ValidationError(f"The specified size '{size}' is not available for the item.")
 
         else:
-            price = Decimal(item.price * cart_item.quantity)
+            price = item.price
 
         extras_prices = {}
         for extra_id in extras:
@@ -504,6 +504,7 @@ class CartUpdateQuantity(generics.UpdateAPIView):
 
         # Calculate total price for the cart item
         total_price = calculate_total_price(price, new_quantity, extras_prices, kitchen_notes_prices)
+        print("Price Calculated: ", total_price)
 
         # Update extras, size, and kitchen notes if provided
         cart_item.size = size
