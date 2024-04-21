@@ -284,10 +284,11 @@ class CartSerializer(serializers.ModelSerializer):
     extras_info = serializers.SerializerMethodField()
     kitchen_notes_info = serializers.SerializerMethodField()
     item_image_url = serializers.SerializerMethodField()
+    item_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info']
+        fields = ['id', 'user', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info', 'item_name']
         read_only_fields = ['id', 'user', 'extras_info', 'kitchen_notes_info']
 
     def validate_quantity(self, value):
