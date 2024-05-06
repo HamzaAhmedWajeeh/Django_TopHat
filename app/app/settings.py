@@ -176,7 +176,8 @@ CORS_ALLOWED_ORIGINS = [
     "http://162.0.213.111:9011",
     "http://tophatcoffee.co",
     "https://tophatcoffee.co",
-    "www.tophatcoffee.co",
+    "https://www.tophatcoffee.co",
+    "http://www.tophatcoffee.co",
 
 ]
 
