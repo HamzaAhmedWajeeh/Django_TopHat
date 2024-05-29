@@ -12,7 +12,14 @@ from core.models import(
     Extras,
     Sizes,
     OrderNotifications,
-    KitchenNotes
+    KitchenNotes,
+    AltMilk,
+    Sweetner,
+    OrderType,
+    Instructions,
+    CoffeeType,
+    SelectBase,
+    AddReplaceIngredients
 )
 from rest_framework.exceptions import ValidationError
 from decimal import Decimal
@@ -344,3 +351,52 @@ class OrderNotificationsSerializer(serializers.ModelSerializer):
         model = OrderNotifications
         fields = ['id', 'order', 'status']
         read_only_fields = ['id', 'order']
+
+
+class AltMilkSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AltMilk
+        fields = ['id', 'type', 'price', 'item']
+        read_only_fields = ['id']
+
+
+class SweetnerSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Sweetner
+        fields = ['id', 'type', 'item']
+        read_only_fields = ['id']
+
+
+class OrderTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = OrderType
+        fields = ['id', 'type', 'item']
+        read_only_fields = ['id']
+
+
+class InstructionsSerializer(serializers.Serializer):
+    class Meta:
+        model = Instructions
+        fields = ['id', 'type', 'item']
+        read_only_fields = ['id']
+
+
+class CoffeeTypeSerializer(serializers.Serializer):
+    class Meta:
+        model = CoffeeType
+        fields = ['id', 'type', 'item']
+        read_only_fields = ['id']
+
+
+class SelectBaseSerializer(serializers.Serializer):
+    class Meta:
+        model = SelectBase
+        fields = ['id', 'type', 'item']
+        read_only_fields = ['id']
+
+
+class AddReplaceIngriedentsSerializer(serializers.Serializer):
+    class Meta:
+        model = AddReplaceIngredients
+        fields = ['id', 'type', 'item', 'price']
+        read_only_fields = ['id']

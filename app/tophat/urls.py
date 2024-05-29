@@ -6,6 +6,12 @@ router = DefaultRouter()
 
 router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
 router.register('kitchen', viewset=views.KitchenNoteModelViewSet, basename='kitchen')
+router.register('sweetner', viewset=views.SweetnerViewset, basename='sweetner')
+router.register('order-type', viewset=views.OrderTypeViewSet, basename='order-type')
+router.register('instructions', viewset=views.InstructionViewSet, basename='instructions')
+router.register('coffee-type', viewset=views.CoffeeTypeViewSet, basename='coffee-type')
+router.register('select-base', viewset=views.SelectBaseViewSet, basename='select-base')
+router.register('add-replace-ingredients', viewset=views.AddReplaceIngredientsViewSet, basename='add-replace-ingredients')
 
 app_name = 'tophat'
 
@@ -60,6 +66,12 @@ urlpatterns = [
     path('kitchen/list/<int:menu_item_id>', views.KitchenNoteListView.as_view(), name='kitchen-list'),
 
     path('reorder/last/order', views.ReOrderLastOrder.as_view(), name='re-order-last-order'),
+
+    path('alt-milk/list', views.AltMilkList.as_view(), name='alt-milk-list'),
+    path('alt-milk/list/<int:menu_item_id>', views.AltMilkListMid.as_view(), name='alt-milk-list-by-item'),
+    path('alt-milk/create', views.AltMilkCreate.as_view(), name='alt-milk-create'),
+    path('alt-milk/update', views.AltMilkUpdate.as_view(), name='alt-milk-update'),
+    path('alt-milk/delete/<int:id>', views.AltMilkDelete.as_view(), name='alt-milk-delete'),
 
     path('', include(router.urls)),
 ]

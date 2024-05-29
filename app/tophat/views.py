@@ -25,7 +25,14 @@ from core.models import(
     OrderNotifications,
     User,
     Payments,
-    LoyaltyPointsPercentage
+    LoyaltyPointsPercentage,
+    AddReplaceIngredients,
+    AltMilk,
+    CoffeeType,
+    SelectBase,
+    OrderType,
+    Sweetner,
+    Instructions
 )
 from .serializers import(
     CartItemCreateSerializer,
@@ -43,7 +50,14 @@ from .serializers import(
     NewOrderSerializer,
     OrderItemSerializer,
     LoyaltyPointsPercentageSerializer,
-    LoyaltyPointsModelSerializer
+    LoyaltyPointsModelSerializer,
+    AltMilkSerializer,
+    SweetnerSerializer,
+    OrderTypeSerializer,
+    InstructionsSerializer,
+    CoffeeTypeSerializer,
+    SelectBaseSerializer,
+    AddReplaceIngriedentsSerializer
 )
 from payments.serializers import PaymentModelSerializer
 from decimal import Decimal
@@ -1009,3 +1023,107 @@ class NotificationListView(generics.ListAPIView):
             orders_and_items.append(order_data)
 
         return Response(orders_and_items)
+
+
+# AltMilk
+class AltMilkList(generics.ListAPIView):
+    serializer_class = AltMilkSerializer
+    queryset = AltMilk.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+class AltMilkListMid(generics.ListAPIView):
+    serializer_class = AltMilkSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = AltMilk.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class AltMilkCreate(generics.CreateAPIView):
+    serializer_class = AltMilkSerializer
+    queryset = AltMilk.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class AltMilkUpdate(generics.UpdateAPIView):
+    serializer_class = AltMilkSerializer
+    queryset = AltMilk.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class AltMilkDelete(generics.DestroyAPIView):
+    serializer_class = AltMilkSerializer
+    queryset = AltMilk.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not AltMilk.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No AltMilk records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        AltMilk.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"AltMilk record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+# Sweetner
+class SweetnerViewset(viewsets.ModelViewSet):
+    serializer_class = SweetnerSerializer
+    queryset = Sweetner.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+# OrderType
+class OrderTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = OrderTypeSerializer
+    queryset = OrderType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+# Instructions
+class InstructionViewSet(viewsets.ModelViewSet):
+    serializer_class = InstructionsSerializer
+    queryset = Instructions.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+# CoffeType
+class CoffeeTypeViewSet(viewsets.ModelViewSet):
+    serializer_class = CoffeeTypeSerializer
+    queryset = CoffeeType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+# SelectBase
+class SelectBaseViewSet(viewsets.ModelViewSet):
+    serializer_class = SelectBaseSerializer
+    queryset = SelectBase.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+
+# AddReplaceIngredients
+class AddReplaceIngredientsViewSet(viewsets.ModelViewSet):
+    serializer_class = AddReplaceIngriedentsSerializer
+    queryset = AddReplaceIngredients.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]

@@ -264,3 +264,54 @@ class Cart(models.Model):
     extras = models.CharField(max_length=255, null=True, blank=True)
     kitchen_notes = models.CharField(max_length=255, null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+
+
+class AltMilk(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class Sweetner(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class OrderType(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class Instructions(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class CoffeeType(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class SelectBase(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
+
+
+class AddReplaceIngredients(models.Model):
+    type = models.CharField(max_length=255, null=True, blank=True)
+    price = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
+    item = models.ForeignKey(
+        'MenuItems', null=True, blank=True, on_delete=models.CASCADE
+        )
