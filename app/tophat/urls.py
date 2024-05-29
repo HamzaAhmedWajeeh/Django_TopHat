@@ -6,11 +6,6 @@ router = DefaultRouter()
 
 router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
 router.register('kitchen', viewset=views.KitchenNoteModelViewSet, basename='kitchen')
-router.register('order-type', viewset=views.OrderTypeViewSet, basename='order-type')
-router.register('instructions', viewset=views.InstructionViewSet, basename='instructions')
-router.register('coffee-type', viewset=views.CoffeeTypeViewSet, basename='coffee-type')
-router.register('select-base', viewset=views.SelectBaseViewSet, basename='select-base')
-router.register('add-replace-ingredients', viewset=views.AddReplaceIngredientsViewSet, basename='add-replace-ingredients')
 
 app_name = 'tophat'
 
@@ -77,6 +72,36 @@ urlpatterns = [
     path('sweetner/create', views.SweetnerCreate.as_view(), name='sweetner-create'),
     path('sweetner/update', views.SweetnerUpdate.as_view(), name='sweetner-update'),
     path('sweetner/delete/<int:id>', views.SweetnerDelete.as_view(), name='sweetner-delete'),
+
+    path('order-type/list', views.OrderTypeList.as_view(), name='order-type-list'),
+    path('order-type/list/<int:menu_item_id>', views.OrderTypeListMid.as_view(), name='order-type-list-by-item'),
+    path('order-type/create', views.OrderTypeCreate.as_view(), name='order-type-create'),
+    path('order-type/update', views.OrderTypeUpdate.as_view(), name='order-type-update'),
+    path('order-type/delete/<int:id>', views.OrderTypeDelete.as_view(), name='order-type-delete'),
+
+    path('instructions/list', views.InstructionList.as_view(), name='instructions-list'),
+    path('instructions/list/<int:menu_item_id>', views.InstructionListMid.as_view(), name='instructions-list-by-item'),
+    path('instructions/create', views.InstructionCreate.as_view(), name='instructions-create'),
+    path('instructions/update', views.InstructionUpdate.as_view(), name='instructions-update'),
+    path('instructions/delete/<int:id>', views.InstructionDelete.as_view(), name='instructions-delete'),
+
+    path('coffee-type/list', views.CoffeeTypeList.as_view(), name='coffee-type-list'),
+    path('coffee-type/list/<int:menu_item_id>', views.CoffeeTypeListMid.as_view(), name='coffee-type-list-by-item'),
+    path('coffee-type/create', views.CoffeeTypeCreate.as_view(), name='coffee-type-create'),
+    path('coffee-type/update', views.CoffeeTypeUpdate.as_view(), name='coffee-type-update'),
+    path('coffee-type/delete/<int:id>', views.CoffeeTypeDelete.as_view(), name='coffee-type-delete'),
+
+    path('select-base/list', views.SelectBaseList.as_view(), name='select-base-list'),
+    path('select-base/list/<int:menu_item_id>', views.SelectBaseListMid.as_view(), name='select-base-list-by-item'),
+    path('select-base/create', views.SelectBaseCreate.as_view(), name='select-base-create'),
+    path('select-base/update', views.SelectBaseUpdate.as_view(), name='select-base-update'),
+    path('select-base/delete/<int:id>', views.SelectBaseDelete.as_view(), name='select-base-delete'),
+
+    path('add-replace-ingredients/list', views.AddReplaceIngredientsList.as_view(), name='add-replace-ingredients/list'),
+    path('add-replace-ingredients/list/<int:menu_item_id>', views.AddReplaceIngredientsListMid.as_view(), name='add-replace-ingredients/list-by-item'),
+    path('add-replace-ingredients/create', views.AddReplaceIngredientsCreate.as_view(), name='add-replace-ingredients/create'),
+    path('add-replace-ingredients/update', views.AddReplaceIngredientsUpdate.as_view(), name='add-replace-ingredients/update'),
+    path('add-replace-ingredients/delete/<int:id>', views.AddReplaceIngredientsDelete.as_view(), name='add-replace-ingredients/delete'),
 
     path('', include(router.urls)),
 ]

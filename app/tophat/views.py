@@ -1137,42 +1137,281 @@ class SweetnerDelete(generics.DestroyAPIView):
         )
 
 
-
 # OrderType
-class OrderTypeViewSet(viewsets.ModelViewSet):
+class OrderTypeList(generics.ListAPIView):
     serializer_class = OrderTypeSerializer
     queryset = OrderType.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+class OrderTypeListMid(generics.ListAPIView):
+    serializer_class = OrderTypeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = OrderType.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class OrderTypeCreate(generics.CreateAPIView):
+    serializer_class = OrderTypeSerializer
+    queryset = OrderType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class OrderTypeUpdate(generics.UpdateAPIView):
+    serializer_class = OrderTypeSerializer
+    queryset = OrderType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class OrderTypeDelete(generics.DestroyAPIView):
+    serializer_class = OrderTypeSerializer
+    queryset = OrderType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not OrderType.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No OrderType records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        OrderType.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"OrderType record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 # Instructions
-class InstructionViewSet(viewsets.ModelViewSet):
+class InstructionList(generics.ListAPIView):
     serializer_class = InstructionsSerializer
     queryset = Instructions.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+class InstructionListMid(generics.ListAPIView):
+    serializer_class = InstructionsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = Instructions.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class InstructionCreate(generics.CreateAPIView):
+    serializer_class = InstructionsSerializer
+    queryset = Instructions.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class InstructionUpdate(generics.UpdateAPIView):
+    serializer_class = InstructionsSerializer
+    queryset = Instructions.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class InstructionDelete(generics.DestroyAPIView):
+    serializer_class = InstructionsSerializer
+    queryset = Instructions.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not Instructions.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No Instructions records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        Instructions.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"Instructions record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 # CoffeType
-class CoffeeTypeViewSet(viewsets.ModelViewSet):
+class CoffeeTypeList(generics.ListAPIView):
     serializer_class = CoffeeTypeSerializer
     queryset = CoffeeType.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+class CoffeeTypeListMid(generics.ListAPIView):
+    serializer_class = CoffeeTypeSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = CoffeeType.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class CoffeeTypeCreate(generics.CreateAPIView):
+    serializer_class = CoffeeTypeSerializer
+    queryset = CoffeeType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class CoffeeTypeUpdate(generics.UpdateAPIView):
+    serializer_class = CoffeeTypeSerializer
+    queryset = CoffeeType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class CoffeeTypeDelete(generics.DestroyAPIView):
+    serializer_class = CoffeeTypeSerializer
+    queryset = CoffeeType.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not CoffeeType.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No CoffeeType records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        CoffeeType.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"CoffeeType record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 # SelectBase
-class SelectBaseViewSet(viewsets.ModelViewSet):
+class SelectBaseList(generics.ListAPIView):
     serializer_class = SelectBaseSerializer
     queryset = SelectBase.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
 
+class SelectBaseListMid(generics.ListAPIView):
+    serializer_class = SelectBaseSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = SelectBase.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class SelectBaseCreate(generics.CreateAPIView):
+    serializer_class = SelectBaseSerializer
+    queryset = SelectBase.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class SelectBaseUpdate(generics.UpdateAPIView):
+    serializer_class = SelectBaseSerializer
+    queryset = SelectBase.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class SelectBaseDelete(generics.DestroyAPIView):
+    serializer_class = SelectBaseSerializer
+    queryset = SelectBase.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not SelectBase.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No SelectBase records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        SelectBase.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"SelectBase record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
 # AddReplaceIngredients
-class AddReplaceIngredientsViewSet(viewsets.ModelViewSet):
+class AddReplaceIngredientsList(generics.ListAPIView):
     serializer_class = AddReplaceIngriedentsSerializer
     queryset = AddReplaceIngredients.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class AddReplaceIngredientsListMid(generics.ListAPIView):
+    serializer_class = AddReplaceIngriedentsSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = AddReplaceIngredients.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class AddReplaceIngredientsCreate(generics.CreateAPIView):
+    serializer_class = AddReplaceIngriedentsSerializer
+    queryset = AddReplaceIngredients.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class AddReplaceIngredientsUpdate(generics.UpdateAPIView):
+    serializer_class = AddReplaceIngriedentsSerializer
+    queryset = AddReplaceIngredients.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class AddReplaceIngredientsDelete(generics.DestroyAPIView):
+    serializer_class = AddReplaceIngriedentsSerializer
+    queryset = AddReplaceIngredients.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not AddReplaceIngredients.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No AddReplaceIngredients records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        AddReplaceIngredients.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"AddReplaceIngredients record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
