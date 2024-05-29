@@ -1025,7 +1025,7 @@ class NotificationListView(generics.ListAPIView):
         return Response(orders_and_items)
 
 
-# AltMilk
+# Alternate Milk
 class AltMilkList(generics.ListAPIView):
     serializer_class = AltMilkSerializer
     queryset = AltMilk.objects.all()
@@ -1082,11 +1082,60 @@ class AltMilkDelete(generics.DestroyAPIView):
 
 
 # Sweetner
-class SweetnerViewset(viewsets.ModelViewSet):
+class SweetnerList(generics.ListAPIView):
     serializer_class = SweetnerSerializer
     queryset = Sweetner.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
+
+
+class SweetnerListMid(generics.ListAPIView):
+    serializer_class = SweetnerSerializer
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        menu_item_id = self.kwargs.get('menu_item_id')
+        queryset = Sweetner.objects.filter(item=menu_item_id).all()
+        return queryset
+
+
+class SweetnerCreate(generics.CreateAPIView):
+    serializer_class = SweetnerSerializer
+    queryset = Sweetner.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class SweetnerUpdate(generics.UpdateAPIView):
+    serializer_class = SweetnerSerializer
+    queryset = Sweetner.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+
+class SweetnerDelete(generics.DestroyAPIView):
+    serializer_class = SweetnerSerializer
+    queryset = Sweetner.objects.all()
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAdminUser, IsAuthenticated]
+
+    def destroy(self, request, *args, **kwargs):
+        id = self.kwargs['id']
+
+        if not Sweetner.objects.filter(id=id).exists():
+            return Response(
+                {"message": f"No Sweetner records found for id = {id}"},
+                status=status.HTTP_404_NOT_FOUND
+            )
+
+        Sweetner.objects.filter(id=id).delete()
+
+        return Response(
+            {"message": f"AltMilk record deleted at id={id}."},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
 
 
 # OrderType

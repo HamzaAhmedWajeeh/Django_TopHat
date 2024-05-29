@@ -6,7 +6,6 @@ router = DefaultRouter()
 
 router.register('sizes', viewset=views.SizeModelViewSet, basename='sizes')
 router.register('kitchen', viewset=views.KitchenNoteModelViewSet, basename='kitchen')
-router.register('sweetner', viewset=views.SweetnerViewset, basename='sweetner')
 router.register('order-type', viewset=views.OrderTypeViewSet, basename='order-type')
 router.register('instructions', viewset=views.InstructionViewSet, basename='instructions')
 router.register('coffee-type', viewset=views.CoffeeTypeViewSet, basename='coffee-type')
@@ -72,6 +71,12 @@ urlpatterns = [
     path('alt-milk/create', views.AltMilkCreate.as_view(), name='alt-milk-create'),
     path('alt-milk/update', views.AltMilkUpdate.as_view(), name='alt-milk-update'),
     path('alt-milk/delete/<int:id>', views.AltMilkDelete.as_view(), name='alt-milk-delete'),
+
+    path('sweetner/list', views.SweetnerList.as_view(), name='sweetner-list'),
+    path('sweetner/list/<int:menu_item_id>', views.SweetnerListMid.as_view(), name='sweetner-list-by-item'),
+    path('sweetner/create', views.SweetnerCreate.as_view(), name='sweetner-create'),
+    path('sweetner/update', views.SweetnerUpdate.as_view(), name='sweetner-update'),
+    path('sweetner/delete/<int:id>', views.SweetnerDelete.as_view(), name='sweetner-delete'),
 
     path('', include(router.urls)),
 ]
