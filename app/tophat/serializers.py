@@ -374,28 +374,28 @@ class OrderTypeSerializer(serializers.ModelSerializer):
         read_only_fields = ['id']
 
 
-class InstructionsSerializer(serializers.Serializer):
+class InstructionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = Instructions
         fields = ['id', 'type', 'item']
         read_only_fields = ['id']
 
 
-class CoffeeTypeSerializer(serializers.Serializer):
+class CoffeeTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = CoffeeType
         fields = ['id', 'type', 'item']
         read_only_fields = ['id']
 
 
-class SelectBaseSerializer(serializers.Serializer):
+class SelectBaseSerializer(serializers.ModelSerializer):
     class Meta:
         model = SelectBase
         fields = ['id', 'type', 'item']
         read_only_fields = ['id']
 
 
-class AddReplaceIngriedentsSerializer(serializers.Serializer):
+class AddReplaceIngriedentsSerializer(serializers.ModelSerializer):
     class Meta:
         model = AddReplaceIngredients
         fields = ['id', 'type', 'item', 'price']
