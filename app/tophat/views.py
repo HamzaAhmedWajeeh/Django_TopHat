@@ -1054,6 +1054,7 @@ class AltMilkCreate(generics.CreateAPIView):
 class AltMilkUpdate(generics.UpdateAPIView):
     serializer_class = AltMilkSerializer
     queryset = AltMilk.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1110,6 +1111,7 @@ class SweetnerCreate(generics.CreateAPIView):
 class SweetnerUpdate(generics.UpdateAPIView):
     serializer_class = SweetnerSerializer
     queryset = Sweetner.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1166,6 +1168,7 @@ class OrderTypeCreate(generics.CreateAPIView):
 class OrderTypeUpdate(generics.UpdateAPIView):
     serializer_class = OrderTypeSerializer
     queryset = OrderType.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1222,6 +1225,7 @@ class InstructionCreate(generics.CreateAPIView):
 class InstructionUpdate(generics.UpdateAPIView):
     serializer_class = InstructionsSerializer
     queryset = Instructions.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1278,6 +1282,7 @@ class CoffeeTypeCreate(generics.CreateAPIView):
 class CoffeeTypeUpdate(generics.UpdateAPIView):
     serializer_class = CoffeeTypeSerializer
     queryset = CoffeeType.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1334,6 +1339,7 @@ class SelectBaseCreate(generics.CreateAPIView):
 class SelectBaseUpdate(generics.UpdateAPIView):
     serializer_class = SelectBaseSerializer
     queryset = SelectBase.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
@@ -1390,6 +1396,7 @@ class AddReplaceIngredientsCreate(generics.CreateAPIView):
 class AddReplaceIngredientsUpdate(generics.UpdateAPIView):
     serializer_class = AddReplaceIngriedentsSerializer
     queryset = AddReplaceIngredients.objects.all()
+    lookup_field = 'id'
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAdminUser, IsAuthenticated]
 
