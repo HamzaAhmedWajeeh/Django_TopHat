@@ -263,6 +263,13 @@ class Cart(models.Model):
     size = models.CharField(max_length=7, null=True, blank=True)
     extras = models.CharField(max_length=255, null=True, blank=True)
     kitchen_notes = models.CharField(max_length=255, null=True, blank=True)
+    alt_milk = models.CharField(max_length=255, null=True, blank=True)
+    sweetner = models.CharField(max_length=255, null=True, blank=True)
+    order_type = models.CharField(max_length=255, null=True, blank=True)
+    coffee_type = models.CharField(max_length=255, null=True, blank=True)
+    instructions = models.CharField(max_length=255, null=True, blank=True)
+    select_base = models.CharField(max_length=255, null=True, blank=True)
+    add_replace_ingredients = models.CharField(max_length=255, null=True, blank=True)
     total = models.DecimalField(max_digits=20, decimal_places=2, null=True, blank=True)
 
 

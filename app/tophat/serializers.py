@@ -290,12 +290,21 @@ class CartSerializer(serializers.ModelSerializer):
     # kitchen_notes = serializers.ListField(required=False, allow_empty=True)
     extras_info = serializers.SerializerMethodField()
     kitchen_notes_info = serializers.SerializerMethodField()
+    alt_milk_info = serializers.SerializerMethodField()
+    sweetner_info = serializers.SerializerMethodField()
+    instructions_info = serializers.SerializerMethodField()
+    add_replace_ingredients_info = serializers.SerializerMethodField()
     item_image_url = serializers.SerializerMethodField()
     item_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Cart
-        fields = ['id', 'user', 'item_name', 'item_image_url', 'item', 'quantity', 'total', 'extras', 'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info']
+        fields = [
+            'id', 'user', 'item_name', 'alt_milk', 'sweetner', 'order_type', 'coffee_type', 'instructions',
+            'select_base', 'add_replace_ingredients', 'item_image_url', 'item', 'quantity', 'total', 'extras',
+            'kitchen_notes', 'size', 'extras_info', 'kitchen_notes_info', 'alt_milk_info', 'sweetner_info',
+            'instructions_info', 'add_replace_ingredients_info'
+            ]
         read_only_fields = ['id', 'user', 'extras_info', 'kitchen_notes_info']
 
     def validate_quantity(self, value):
@@ -303,15 +312,9 @@ class CartSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError("Quantity must be a positive integer.")
         return value
 
-    # def get_item_name(self, obj):
-    #     cart_items = self.context.get('cart_items', [])
-    #     item = next((item for item in cart_items if item.id == obj.id), None)
-    #     return item.item.name if item else ''
-
     def get_item_name(self, obj):
         # Use obj.item.name instead of trying to search through cart_items
         return obj.item.name if obj.item else ''
-
 
     def get_item_image_url(self, obj):
         return obj.item.image.url if obj.item and obj.item.image else None
@@ -320,6 +323,26 @@ class CartSerializer(serializers.ModelSerializer):
         extras_ids = obj.extras.split(',') if obj.extras else []
         extras_info = Extras.objects.filter(pk__in=extras_ids).values('name', 'price')
         return list(extras_info)
+
+    def get_sweetner_info(self, obj):
+        sweetner_ids = obj.sweetner.split(',') if obj.sweetner else []
+        sweetner_info = Sweetner.objects.filter(pk__in=sweetner_ids).values('type')
+        return list(sweetner_info)
+
+    def get_instructions_info(self, obj):
+        instructions_ids = obj.instructions.split(',') if obj.instructions else []
+        instructions_info = Instructions.objects.filter(pk__in=instructions_ids).values('type')
+        return list(instructions_info)
+
+    def get_add_replace_ingredients_info(self, obj):
+        add_replace_ingredients_ids = obj.add_replace_ingredients.split(',') if obj.add_replace_ingredients else []
+        add_replace_ingredients_info = AddReplaceIngredients.objects.filter(pk__in=add_replace_ingredients_ids).values('type', 'price')
+        return list(add_replace_ingredients_info)
+
+    def get_alt_milk_info(self, obj):
+        alt_milk_ids = obj.alt_milk.split(',') if obj.alt_milk else []
+        alt_milk_info = AltMilk.objects.filter(pk__in=alt_milk_ids).values('type', 'price')
+        return list(alt_milk_info)
 
     def get_kitchen_notes_info(self, obj):
         kitchen_notes_ids = obj.kitchen_notes.split(',') if obj.kitchen_notes else []
@@ -335,6 +358,14 @@ class CartItemCreateSerializer(serializers.Serializer):
     total = serializers.DecimalField(required=False, max_digits=20, decimal_places=2)
     extras = serializers.ListField(required=False, allow_empty=True)
     kitchen_notes = serializers.ListField(required=False, allow_empty=True)
+    sweetner = serializers.ListField(required=False, allow_empty=True)
+    add_replace_ingredients = serializers.ListField(required=False, allow_empty=True)
+    instructions = serializers.ListField(required=False, allow_empty=True)
+    alt_milk = serializers.CharField(required=False)
+    select_base = serializers.CharField(required=False)
+    order_type = serializers.CharField(required=False)
+    coffee_type = serializers.CharField(required=False)
+
 
     def validate(self, data):
         item_id = data.get('item_id')

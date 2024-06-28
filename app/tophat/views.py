@@ -469,6 +469,13 @@ class CartUpdateQuantity(generics.UpdateAPIView):
         new_quantity = request.data.get('quantity')
         extras = request.data.get('extras', [])
         kitchen_notes = request.data.get('kitchen_notes', [])
+        instructions = request.data.get('instructions', [])
+        add_replace_ingredients = request.data.get('add_replace_ingredients', [])
+        sweetner = request.data.get('sweetner', [])
+        alt_milk = request.data.get('alt_milk', None)
+        select_base = request.data.get('select_base', None)
+        order_type = request.data.get('order_type', None)
+        coffee_type = request.data.get('coffee_type', None)
         size = request.data.get('size')
 
         # Validate the item ID and new quantity
@@ -508,6 +515,23 @@ class CartUpdateQuantity(generics.UpdateAPIView):
             else:
                 raise ValidationError(f"Extra with ID '{extra_id}' is not available.")
 
+        add_replace_ingredients_prices = {}
+        for add_replace_ingredients_id in add_replace_ingredients:
+            add_replace_ingredients = AddReplaceIngredients.objects.filter(pk=add_replace_ingredients_id).first()
+            if add_replace_ingredients:
+                add_replace_ingredients_prices[add_replace_ingredients_id] = extra.price
+            else:
+                raise ValidationError(f"add_replace_ingredients with ID '{add_replace_ingredients_id}' is not available.")
+
+        alt_milk_prices = {}
+        if alt_milk and alt_milk is not None:
+            for alt_milk_id in alt_milk:
+                alt_milk = AltMilk.objects.filter(pk=alt_milk_id).first()
+                if alt_milk:
+                    alt_milk_prices[alt_milk_id] = alt_milk.price
+                else:
+                    raise ValidationError(f"alt_milk with ID '{alt_milk_id}' is not available.")
+
         kitchen_notes_prices = {}
         for note_id in kitchen_notes:
             note = KitchenNotes.objects.filter(pk=note_id).first()
@@ -517,14 +541,21 @@ class CartUpdateQuantity(generics.UpdateAPIView):
                 raise ValidationError(f"Kitchen note with ID '{note_id}' is not available.")
 
         # Calculate total price for the cart item
-        total_price = calculate_total_price(price, new_quantity, extras_prices, kitchen_notes_prices)
+        total_price = calculate_total_price(price, new_quantity, extras_prices, kitchen_notes_prices, add_replace_ingredients_prices, alt_milk_prices)
         print("Price Calculated: ", total_price)
 
         # Update extras, size, and kitchen notes if provided
         cart_item.size = size
         cart_item.total = total_price
+        cart_item.select_base = select_base if select_base else cart_item.select_base
+        cart_item.order_type = order_type if order_type else cart_item.order_type
+        cart_item.coffee_type = coffee_type if coffee_type else cart_item.coffee_type
         cart_item.extras = ','.join(map(str, extras))
         cart_item.kitchen_notes = ','.join(map(str, kitchen_notes))
+        cart_item.alt_milk = ','.join(map(str, alt_milk)) if alt_milk else cart_item.alt_milk
+        cart_item.add_replace_ingredients = ','.join(map(str, add_replace_ingredients)) if add_replace_ingredients else cart_item.add_replace_ingredients
+        cart_item.sweetner = ','.join(map(str, sweetner)) if sweetner else cart_item.sweetner
+        cart_item.instructions = ','.join(map(str, instructions)) if instructions else cart_item.instructions
 
         cart_item.save()
 
@@ -559,11 +590,35 @@ class CartGetView(generics.ListAPIView):
         for item_data in data:
             extras_ids = item_data.get('extras')
             kitchen_notes_ids = item_data.get('kitchen_notes')
+            alt_milk_ids = item_data.get('alt_milk')
+            sweetner_ids = item_data.get('sweetner')
+            instructions_ids = item_data.get('instructions')
+            add_replace_ingredients_ids = item_data.get('add_replace_ingredients')
 
             if extras_ids:
                 extras_ids = extras_ids.split(',') if ',' in extras_ids else [extras_ids]
                 extras_info = [{'name': extra.name, 'price': extra.price} for extra in Extras.objects.filter(pk__in=extras_ids)]
                 item_data['extras_info'] = extras_info
+
+            if sweetner_ids:
+                sweetner_ids = sweetner_ids.split(',') if ',' in sweetner_ids else [sweetner_ids]
+                sweetner_info = [{'type': sweetner.type} for sweetner in Sweetner.objects.filter(pk__in=sweetner_ids)]
+                item_data['sweetner_info'] = sweetner_info
+
+            if instructions_ids:
+                instructions_ids = instructions_ids.split(',') if ',' in instructions_ids else [instructions_ids]
+                instructions_info = [{'type': instructions.type} for instructions in Instructions.objects.filter(pk__in=instructions_ids)]
+                item_data['instructions_info'] = instructions_info
+
+            if add_replace_ingredients_ids:
+                add_replace_ingredients_ids = add_replace_ingredients_ids.split(',') if ',' in add_replace_ingredients_ids else [add_replace_ingredients_ids]
+                add_replace_ingredients_info = [{'type': add_replace_ingredients.type, 'price': add_replace_ingredients.price} for add_replace_ingredients in AddReplaceIngredients.objects.filter(pk__in=add_replace_ingredients_ids)]
+                item_data['add_replace_ingredients_info'] = add_replace_ingredients_info
+
+            if alt_milk_ids:
+                alt_milk_ids = alt_milk_ids.split(',') if ',' in alt_milk_ids else [alt_milk_ids]
+                alt_milk_info = [{'type': alt_milk.type, 'price': alt_milk.price} for alt_milk in AltMilk.objects.filter(pk__in=alt_milk_ids)]
+                item_data['alt_milk_info'] = alt_milk_info
 
             if kitchen_notes_ids:
                 kitchen_notes_ids = kitchen_notes_ids.split(',') if ',' in kitchen_notes_ids else [kitchen_notes_ids]
@@ -590,8 +645,16 @@ class AddToCartView(generics.CreateAPIView):
         user = self.request.user
         item_id = serializer.validated_data['item_id']
         quantity = serializer.validated_data['quantity']
+        order_type = serializer.validated_data.get('order_type', None)
+        coffee_type = serializer.validated_data.get('coffee_type', None)
+        select_base = serializer.validated_data.get('select_base', None)
 
         item = get_object_or_404(MenuItems, pk=item_id)
+
+        # fetch order_type, coffee_type, select_base
+        order_type_obj = OrderType.objects.filter(pk=order_type).first()
+        coffee_type_obj = CoffeeType.objects.filter(pk=coffee_type).first()
+        select_base_obj = SelectBase.objects.filter(pk=select_base).first()
 
         # Fetch size data
         size_name = serializer.validated_data.get('size')
@@ -607,16 +670,34 @@ class AddToCartView(generics.CreateAPIView):
         # Fetch extras and kitchen notes and calculate their total prices
         extras_data = serializer.validated_data.get('extras', None)
         kitchen_notes_data = serializer.validated_data.get('kitchen_notes', None)
+        alt_milk_data = serializer.validated_data.get('alt_milk', None)
+        sweetner_data = serializer.validated_data.get('sweetner', None)
+        instructions_data = serializer.validated_data.get('instructions', None)
+        add_replace_ingredients_data = serializer.validated_data.get('add_replace_ingredients', None)
 
         # Fetch prices of extras and kitchen notes for the new item
         extras_price_total = Decimal('0.0')
         kitchen_notes_price_total = Decimal('0.0')
+        alt_milk_price_total = Decimal('0.0')
+        add_replace_ingredients_price_total = Decimal('0.0')
 
         if extras_data is not None:
             for extra_id in extras_data:
                 extra_price = Extras.objects.filter(pk=extra_id).values_list('price', flat=True).first()
                 if extra_price:
                     extras_price_total += extra_price
+
+        if add_replace_ingredients_data is not None:
+            for add_replace_ingredients_id in add_replace_ingredients_data:
+                add_replace_ingredients_price = Extras.objects.filter(pk=add_replace_ingredients_id).values_list('price', flat=True).first()
+                if add_replace_ingredients_price:
+                    add_replace_ingredients_price_total += add_replace_ingredients_price
+
+        if alt_milk_data is not None:
+            for alt_milk_id in alt_milk_data:
+                alt_milk_price = AltMilk.objects.filter(pk=alt_milk_id).values_list('price', flat=True).first()
+                if alt_milk_price:
+                    alt_milk_price_total += alt_milk_price
 
         if kitchen_notes_data is not None:
             for note_id in kitchen_notes_data:
@@ -625,7 +706,7 @@ class AddToCartView(generics.CreateAPIView):
                     kitchen_notes_price_total += note_price
 
         # Calculate total price including extras and kitchen notes for the new item
-        total_price = total + extras_price_total + kitchen_notes_price_total
+        total_price = total + extras_price_total + kitchen_notes_price_total + add_replace_ingredients_price_total + alt_milk_price_total
 
         # Check if a cart item with the same item ID and size already exists for the user
         existing_cart_item = Cart.objects.filter(
@@ -633,7 +714,15 @@ class AddToCartView(generics.CreateAPIView):
             item=item,
             size=size_name,
             extras=','.join(map(str, extras_data)) if extras_data is not None else None,
-            kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None
+            kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None,
+            order_type=order_type,
+            coffee_type=coffee_type,
+            select_base=select_base,
+            sweetner=','.join(map(str, sweetner_data)) if sweetner_data is not None else None,
+            instructions=','.join(map(str, instructions_data)) if instructions_data is not None else None,
+            alt_milk=','.join(map(str, alt_milk_data)) if alt_milk_data is not None else None,
+            add_replace_ingredients=','.join(map(str, add_replace_ingredients_data)) if add_replace_ingredients_data is not None else None,
+
         ).first()
 
         if existing_cart_item is not None:
@@ -643,15 +732,21 @@ class AddToCartView(generics.CreateAPIView):
             existing_cart_item.save()
 
             cart_data = [{
-            'cart_id': existing_cart_item.id if existing_cart_item else None,
-            'item': item.name,
-            'quantity': existing_cart_item.quantity,
-            'total': str(total_price),
-            'item_id': item_id,
-            'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
-            'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
-            'size_info': {'name': size_name} if size_name else {}
-        }]
+                'cart_id': existing_cart_item.id if existing_cart_item else None,
+                'item': item.name,
+                'quantity': existing_cart_item.quantity,
+                'total': str(total_price),
+                'item_id': item_id,
+                'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
+                'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
+                'instructions_info': ','.join(str(instructions) for instructions in Instructions.objects.filter(pk__in=instructions_data).values('type')) if instructions_data is not None else None,
+                'add_replace_ingredients_info': ','.join(str(add_replace_ingredients) for add_replace_ingredients in AddReplaceIngredients.objects.filter(pk__in=add_replace_ingredients_data).values('type', 'price')) if add_replace_ingredients_data is not None else None,
+                'alt_milk_info': ','.join(str(alt_milk) for alt_milk in AltMilk.objects.filter(pk__in=alt_milk_data).values('type', 'price')) if alt_milk_data is not None else None,
+                'size_info': {'name': size_name} if size_name else {},
+                'order_type_info': {'name': order_type_obj.type} if order_type_obj else {},  # Serialize the name
+                'coffee_type_info': {'name': coffee_type_obj.type} if coffee_type_obj else {},  # Serialize the name
+                'select_base_info': {'name': select_base_obj.type} if select_base_obj else {}  # Serialize the name
+            }]
 
         else:
             # Create a new cart item with the extras and kitchen notes associated with the new item only
@@ -662,7 +757,14 @@ class AddToCartView(generics.CreateAPIView):
                 total=total_price,
                 size=size_name,
                 extras=','.join(map(str, extras_data)) if extras_data is not None else None,
-                kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None
+                kitchen_notes=','.join(map(str, kitchen_notes_data)) if kitchen_notes_data is not None else None,
+                order_type=order_type,
+                coffee_type=coffee_type,
+                select_base=select_base,
+                sweetner=','.join(map(str, sweetner_data)) if sweetner_data is not None else None,
+                instructions=','.join(map(str, instructions_data)) if instructions_data is not None else None,
+                alt_milk=','.join(map(str, alt_milk_data)) if alt_milk_data is not None else None,
+                add_replace_ingredients=','.join(map(str, add_replace_ingredients_data)) if add_replace_ingredients_data is not None else None,
             )
 
             # Fetch details only for the newly added item
@@ -674,7 +776,13 @@ class AddToCartView(generics.CreateAPIView):
                 'item_id': item_id,
                 'extras_info': ','.join(str(extra) for extra in Extras.objects.filter(pk__in=extras_data).values('name', 'price')) if extras_data is not None else None,
                 'kitchen_notes_info': ','.join(str(note) for note in KitchenNotes.objects.filter(pk__in=kitchen_notes_data).values('name', 'price')) if kitchen_notes_data is not None else None,
-                'size_info': {'name': size_name} if size_name else {}
+                'size_info': {'name': size_name} if size_name else {},
+                'instructions_info': ','.join(str(instructions) for instructions in Instructions.objects.filter(pk__in=instructions_data).values('type')) if instructions_data is not None else None,
+                'add_replace_ingredients_info': ','.join(str(add_replace_ingredients) for add_replace_ingredients in AddReplaceIngredients.objects.filter(pk__in=add_replace_ingredients_data).values('type', 'price')) if add_replace_ingredients_data is not None else None,
+                'alt_milk_info': ','.join(str(alt_milk) for alt_milk in AltMilk.objects.filter(pk__in=alt_milk_data).values('type', 'price')) if alt_milk_data is not None else None,
+                'order_type_info': {'name': order_type_obj.type} if order_type_obj else {},  # Serialize the name
+                'coffee_type_info': {'name': coffee_type_obj.type} if coffee_type_obj else {},  # Serialize the name
+                'select_base_info': {'name': select_base_obj.type} if select_base_obj else {}  # Serialize the name
             }]
 
         return Response({
