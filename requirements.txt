@@ -6,7 +6,7 @@ pillow
 uwsgi>=2.0.20,<2.1
 django-cors-headers>=4.3.1,<4.4
 drf-yasg==1.21.7
-stripe>=7.11.0<7.12
+stripe
 pandas==2.1.4
 python-dotenv==1.0.0
 sqlalchemy==2.0.25

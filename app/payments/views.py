@@ -226,6 +226,7 @@ class OrderConfirmation(GenericAPIView):
             )
 
             loyalty_points = calculateLoyaltyPoints(amount_returned)
+            loyalty_points_instance = None
             try:
 
                 loyalty_points_available = LoyaltyPoints.objects.get(user=user)
@@ -260,7 +261,7 @@ class OrderConfirmation(GenericAPIView):
                 subject,
                 message=None,
                 from_email=settings.DEFAULT_FROM_EMAIL,
-                recipient_list=user.email,
+                recipient_list=[user.email],
                 html_message=html_message
             )
 
@@ -270,7 +271,7 @@ class OrderConfirmation(GenericAPIView):
                     'order_details': order_serializer.data,
                     'order_items': order_item_serializer.data,
                     # 'order_items': order_item_data,
-                    'loyalty_points': loyalty_points_instance.points,
+                    'loyalty_points': loyalty_points_instance.points if loyalty_points_instance is not None else None,
                     'payment_info': payment_serializer.data,
                 }
             }, status=status.HTTP_200_OK)
