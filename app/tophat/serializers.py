@@ -285,6 +285,10 @@ class ItemExtrasSerializer(serializers.ModelSerializer):
             ]
 
 
+class ReOrderSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField(required=False)
+
+
 class CartSerializer(serializers.ModelSerializer):
     # extras = serializers.ListField(required=False, allow_empty=True)
     # kitchen_notes = serializers.ListField(required=False, allow_empty=True)

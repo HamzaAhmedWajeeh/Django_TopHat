@@ -57,7 +57,8 @@ from .serializers import(
     InstructionsSerializer,
     CoffeeTypeSerializer,
     SelectBaseSerializer,
-    AddReplaceIngriedentsSerializer
+    AddReplaceIngriedentsSerializer,
+    ReOrderSerializer
 )
 from payments.serializers import PaymentModelSerializer
 from decimal import Decimal
@@ -878,24 +879,27 @@ class OrderHistory(generics.ListAPIView):
 
 
 # Re Order last ORDER
-class ReOrderLastOrder(generics.ListAPIView):
-    serializer_class = CartSerializer
+class ReOrderLastOrder(generics.GenericAPIView):
+    serializer_class = ReOrderSerializer
     queryset = Cart.objects.all()
     authentication_classes = [authentication.TokenAuthentication]
     permission_classes = [IsAuthenticated]
 
-    def get(self, request):
+    def post(self, request):
+
         user = self.request.user
-        last_order = Orders.objects.filter(user=user).order_by('-date').first()
+        id = request.data.get('order_id')
+
+        last_order = Orders.objects.filter(user=user, id=id).first()
 
         if not last_order or last_order == [] or last_order is None:
-            return Response({"error": "No previous order found."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"error": "Order not found"}, status=status.HTTP_404_NOT_FOUND)
 
         last_order_items = OrderItems.objects.filter(order=last_order)
 
         if not last_order_items or last_order_items == [] or last_order_items is None:
             return Response({
-                "message": "No order items found in your previous order",
+                "message": "No order items found in your order",
             }, status=status.HTTP_404_NOT_FOUND)
 
         # Delete existing items in the cart for the user
@@ -915,10 +919,10 @@ class ReOrderLastOrder(generics.ListAPIView):
 
         # Fetch cart items after updating the cart
         cart_items = Cart.objects.filter(user=user)
-        cart_serializer = self.serializer_class(cart_items, many=True)
+        cart_serializer = CartSerializer(cart_items, many=True)
 
         return Response({
-            "message": "Cart updated with items from the last order.",
+            "message": "Cart updated with items from the last order. Kindly proceed to checkout",
             "cart_items": cart_serializer.data
         }, status=status.HTTP_200_OK)
 
