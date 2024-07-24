@@ -878,6 +878,38 @@ class OrderHistory(generics.ListAPIView):
         }, status=status.HTTP_200_OK)
 
 
+class OrderHistoryPending(generics.ListAPIView):
+    serializer_class = None
+    authentication_classes = [authentication.TokenAuthentication]
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        queryset = Orders.objects.filter(
+            user=user,
+            order_status='in progress',
+            payment_status='succeeded'
+        )
+        return queryset
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+
+        # Separate orders into two categories: PAID BY POINTS and PAID ONLINE
+        paid_by_points_orders = queryset.filter(payments__paid_by_points=True)
+        paid_online_orders = queryset.exclude(payments__paid_by_points=True)
+
+        # Serialize orders and order items for both categories
+        paid_by_points_serializer = OrderSerializer(paid_by_points_orders, many=True)
+        paid_online_serializer = OrderSerializer(paid_online_orders, many=True)
+
+        # Return response
+        return Response({
+            'paid_by_points_orders': paid_by_points_serializer.data,
+            'paid_online_orders': paid_online_serializer.data
+        }, status=status.HTTP_200_OK)
+
+
 # Re Order last ORDER
 class ReOrderLastOrder(generics.GenericAPIView):
     serializer_class = ReOrderSerializer

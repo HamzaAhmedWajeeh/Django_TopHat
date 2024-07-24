@@ -52,6 +52,7 @@ urlpatterns = [
     path('notifications/list', views.NotificationListView.as_view(), name='notifications-list'),
 
     path('order/history', views.OrderHistory.as_view(), name='order-history-list'),
+    path('order/pending/history', views.OrderHistoryPending.as_view(), name='order-pending-history-list'),
 
 
     path('sizes/list/<int:menu_item_id>', views.SizesListView.as_view(), name='sizes-list'),
